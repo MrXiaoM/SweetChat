@@ -15,6 +15,7 @@ import java.net.URL;
 import java.util.List;
 
 import org.jetbrains.annotations.NotNull;
+import top.mrxiaom.sweet.chat.database.MessageDatabase;
 
 public class SweetChat extends BukkitPlugin {
     public static SweetChat getInstance() {
@@ -59,10 +60,16 @@ public class SweetChat extends BukkitPlugin {
         return PaperFactory.createInventoryFactory();
     }
 
+    private MessageDatabase messageDatabase;
+
+    public MessageDatabase getMessageDatabase() {
+        return messageDatabase;
+    }
+
     @Override
     protected void beforeEnable() {
         options.registerDatabase(
-                // 在这里添加数据库 (如果需要的话)
+                messageDatabase = new MessageDatabase(this)
         );
     }
 

@@ -14,7 +14,7 @@ val base = top.mrxiaom.gradle.LibraryHelper(project)
 group = "top.mrxiaom.sweet.chat"
 version = "1.0.0"
 val targetJavaVersion = 8
-val pluginBaseModules = base.modules.run { listOf(library, paper, l10n) }
+val pluginBaseModules = base.modules.run { listOf(library, paper, l10n, misc) }
 val shadowGroup = "top.mrxiaom.sweet.chat.libs"
 
 repositories {
@@ -28,7 +28,6 @@ repositories {
 
 dependencies {
     compileOnly("org.spigotmc:spigot-api:1.20-R0.1-SNAPSHOT")
-    // compileOnly("org.spigotmc:spigot:1.20") // NMS
     compileOnly("org.jetbrains:annotations:24.0.0")
 
     compileOnly("me.clip:placeholderapi:2.11.6")
@@ -37,7 +36,9 @@ dependencies {
     base.library("net.kyori:adventure-platform-bukkit:4.4.0")
     base.library("net.kyori:adventure-text-minimessage:4.22.0")
     base.library("net.kyori:adventure-text-serializer-plain:4.22.0")
-    implementation("com.zaxxer:HikariCP:4.0.3") { isTransitive = false }
+    base.library("com.zaxxer:HikariCP:4.0.3")
+
+    implementation("top.mrxiaom:EvalEx-j8:3.4.0")
     implementation("com.github.technicallycoded:FoliaLib:0.4.4") { isTransitive = false }
     for (artifact in pluginBaseModules) {
         implementation("$artifact")
@@ -65,7 +66,7 @@ tasks {
     shadowJar {
         mapOf(
             "top.mrxiaom.pluginbase" to "base",
-            "com.zaxxer.hikari" to "hikari",
+            "com.ezylang.evalex" to "evalex",
             "com.tcoded.folialib" to "folialib",
         ).forEach { (original, target) ->
             relocate(original, "$shadowGroup.$target")

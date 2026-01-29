@@ -3,3 +3,13 @@ listener:
   # LOWEST -> LOW -> NORMAL -> HIGH -> HIGHEST
   # 作为聊天插件，比较建议使用 HIGHEST 优先级
   priority: HIGHEST
+
+# 跨服广播设置
+cross-server:
+  # 消息广播模式
+  # NONE - 不广播消息
+  # BUNGEE_CORD - 通过 BungeeCord 消息通道广播消息
+  # DATABASE - 通过数据库轮询广播消息
+  mode: NONE
+  # 当前子服所在的跨服分组
+  group: default
