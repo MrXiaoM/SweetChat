@@ -3,6 +3,7 @@ package top.mrxiaom.sweet.chat.impl.format;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import org.bukkit.configuration.ConfigurationSection;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import top.mrxiaom.pluginbase.utils.AdventureUtil;
@@ -18,6 +19,7 @@ public class PartPlain implements IFormatPart {
     private final @NotNull List<String> hoverText;
     private final @Nullable ClickEvent.Action clickAction;
     private final @NotNull String clickValue;
+    @ApiStatus.Internal
     public PartPlain(ConfigurationSection config) {
         this.content = config.getString("content", "");
         this.hoverText = config.getStringList("hover-text");

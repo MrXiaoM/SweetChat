@@ -16,6 +16,7 @@ import top.mrxiaom.sweet.chat.api.ChatContext;
 import top.mrxiaom.sweet.chat.api.IFormatPart;
 import top.mrxiaom.sweet.chat.api.IFormatPartProvider;
 import top.mrxiaom.sweet.chat.impl.format.PartPlain;
+import top.mrxiaom.sweet.chat.impl.format.PartPlayerMessage;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -26,6 +27,7 @@ public class ChatListener extends AbstractModule implements Listener {
     public ChatListener(SweetChat plugin) {
         super(plugin);
         registerPart("plain", PartPlain::new);
+        registerPart("player message", PartPlayerMessage::new);
     }
 
     @Override
