@@ -3,10 +3,13 @@ package top.mrxiaom.sweet.chat.api;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import top.mrxiaom.pluginbase.utils.depend.PAPI;
 import top.mrxiaom.sweet.chat.SweetChat;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -50,6 +53,16 @@ public class ChatContext {
      */
     public void text(String text) {
         this.text = text;
+    }
+
+    @NotNull
+    public String setPlaceholders(@NotNull String str) {
+        return PAPI.setPlaceholders(player, str);
+    }
+
+    @NotNull
+    public List<String> setPlaceholders(@NotNull List<String> list) {
+        return PAPI.setPlaceholders(player, list);
     }
 
     /**
