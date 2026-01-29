@@ -1,0 +1,13 @@
+name: SweetChat
+version: '${version}'
+main: top.mrxiaom.sweet.chat.SweetChat
+api-version: 1.13
+depend: []
+softdepend: 
+  - PlaceholderAPI
+authors: [ MrXiaoM ]
+folia-supported: true
+commands:
+  sweetchat:
+    description: 'The main command of SweetChat'
+    aliases: [ schat, sc, chat ]
