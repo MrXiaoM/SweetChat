@@ -53,6 +53,7 @@ public class ChatListener extends AbstractModule implements Listener {
                 if (e.isCancelled()) return;
                 if (onChat(e.getPlayer(), e.getMessage())) {
                     e.setCancelled(true);
+                    e.setFormat("");
                 }
             }
         }, plugin, false);
