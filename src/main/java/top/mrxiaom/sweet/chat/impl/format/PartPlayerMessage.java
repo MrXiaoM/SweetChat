@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import top.mrxiaom.pluginbase.utils.AdventureUtil;
 import top.mrxiaom.sweet.chat.api.ChatContext;
 import top.mrxiaom.sweet.chat.api.IFormatPart;
+import top.mrxiaom.sweet.chat.func.MessageReplacementManager;
 import top.mrxiaom.sweet.chat.func.MiniMessageTagsManager;
 
 public class PartPlayerMessage implements IFormatPart {
@@ -26,7 +27,9 @@ public class PartPlayerMessage implements IFormatPart {
             text = ctx.setPlaceholders(text);
         }
 
-        // TODO: 解析替换特定格式为 MiniMessage 标签，例如物品展示
+        // 解析替换特定格式为 MiniMessage 标签，例如物品展示
+        MessageReplacementManager replacer = MessageReplacementManager.inst();
+        text = replacer.handleItemDisplay(player, text, builder);
 
         return AdventureUtil.miniMessage(builder.build(), text);
     }
