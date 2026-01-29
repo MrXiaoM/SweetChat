@@ -41,6 +41,11 @@ public class ChatListener extends AbstractModule implements Listener {
     @Override
     public void reloadConfig(MemoryConfiguration config) {
         HandlerList.unregisterAll(this);
+        File folder = plugin.resolve(config.getString("folder.chat", "./chat"));
+        if (!folder.exists()) {
+            plugin.saveResource("chat/default.yml", new File(folder, "default.yml"));
+        }
+        reloadChatFormat(folder);
         EventPriority priority = getPriority(config, "listener.priority", EventPriority.HIGHEST);
         Bukkit.getPluginManager().registerEvent(AsyncPlayerChatEvent.class, this, priority, (listener, event) -> {
             if (event instanceof AsyncPlayerChatEvent) {

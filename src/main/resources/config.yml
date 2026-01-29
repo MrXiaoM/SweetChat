@@ -1,3 +1,7 @@
+# 重定向配置文件夹位置
+folder:
+  chat: './chat'
+
 listener:
   # 事件监听优先级，服务端会按以下顺序执行事件监听处理器
   # LOWEST -> LOW -> NORMAL -> HIGH -> HIGHEST
