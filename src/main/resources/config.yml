@@ -13,7 +13,7 @@ message-replacements:
   # 展示物品
   item-display:
     # 显示格式
-    format: '[%item%]'
+    format: '&7[&e%item%&7]'
     # 每个格子仅替换一次，重复输入相同格子将不会替换后面输入的
     one-slot-only-replace-once: true
     # 玩家输入什么时，获取哪个格子的物品
@@ -29,6 +29,7 @@ message-replacements:
       '%7': HOTBAR_7
       '%8': HOTBAR_8
       '%9': HOTBAR_9
+  # 替换变量
   placeholders:
     # 每个变量仅替换一次
     one-key-only-replace-once: true
