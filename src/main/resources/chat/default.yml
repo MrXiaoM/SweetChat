@@ -1,0 +1,31 @@
+# 使用该聊天格式需要什么权限，设为 none 无需权限
+permission: none
+# 该聊天格式的匹配优先级，数值越小越先匹配
+priority: 1000
+
+# 当前子服聊天格式
+# TODO: 所有可用的聊天格式详见文档
+chat-format:
+  - type: plain
+    content: '<'
+
+  - type: plain
+    content: '&e%player_name%'
+    hover-text:
+      - '&f玩家名称: &e%player_name%'
+      - '&f所在世界: &e%player_world%'
+      - '&f所在坐标: &e%player_x%&7, &e%player_y%&7, &e%player_z%'
+      - '&f经验等级: &e%player_level%'
+      - ''
+      - '&b点击私聊玩家'
+    click:
+      action: SUGGEST_COMMAND
+      value: '/msg %player_name% '
+
+  - type: plain
+    content: '> '
+
+  - type: player message
+
+# 在其它子服显示的聊天格式，如不设置则与 chat-format 使用同一个格式
+# cross-server-format: {}
