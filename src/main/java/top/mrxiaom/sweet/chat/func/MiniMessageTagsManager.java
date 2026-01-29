@@ -1,13 +1,18 @@
 package top.mrxiaom.sweet.chat.func;
 
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
-import net.kyori.adventure.text.minimessage.tag.standard.StandardTags;
 import org.bukkit.permissions.Permissible;
 import top.mrxiaom.pluginbase.func.AutoRegister;
 import top.mrxiaom.pluginbase.utils.AdventureUtil;
 import top.mrxiaom.sweet.chat.SweetChat;
+import top.mrxiaom.sweet.chat.impl.format.tags.CustomColorTagResolver;
+import top.mrxiaom.sweet.chat.impl.format.tags.HexColorTagResolver;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static net.kyori.adventure.text.minimessage.tag.standard.StandardTags.*;
 
@@ -23,7 +28,23 @@ public class MiniMessageTagsManager extends AbstractModule {
         if (has(p, "color.all")) {
             builder.resolver(color());
         } else {
-            // TODO: 支持不同颜色标签的权限分配
+            List<NamedTextColor> enabledColors = new ArrayList<>();
+            for (NamedTextColor color : NamedTextColor.NAMES.values()) {
+                String name = color.toString().replace("_", "-").toLowerCase();
+                if (has(p, "color." + name)) {
+                    enabledColors.add(color);
+                }
+            }
+            if (!enabledColors.isEmpty()) {
+                try {
+                    builder.resolver(new CustomColorTagResolver(enabledColors));
+                } catch (LinkageError ignored) {}
+            }
+            if (has(p, "color.hex")) {
+                try {
+                    builder.resolver(HexColorTagResolver.INSTANCE);
+                } catch (LinkageError ignored) {}
+            }
         }
         if (has(p, "color.shadow")) {
             try {
