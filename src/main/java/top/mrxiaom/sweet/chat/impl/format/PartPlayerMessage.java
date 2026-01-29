@@ -30,6 +30,7 @@ public class PartPlayerMessage implements IFormatPart {
         // 解析替换特定格式为 MiniMessage 标签，例如物品展示
         MessageReplacementManager replacer = MessageReplacementManager.inst();
         text = replacer.handleItemDisplay(player, text, builder);
+        text = replacer.handlePlaceholders(player, text, builder);
 
         return AdventureUtil.miniMessage(builder.build(), text);
     }

@@ -14,6 +14,7 @@ import top.mrxiaom.pluginbase.func.AutoRegister;
 import top.mrxiaom.pluginbase.utils.AdventureItemStack;
 import top.mrxiaom.pluginbase.utils.AdventureUtil;
 import top.mrxiaom.pluginbase.utils.Util;
+import top.mrxiaom.pluginbase.utils.depend.PAPI;
 import top.mrxiaom.sweet.chat.SweetChat;
 import top.mrxiaom.sweet.chat.config.EnumItemSource;
 
@@ -25,23 +26,37 @@ public class MessageReplacementManager extends AbstractModule {
     private final Map<String, EnumItemSource> itemDisplayInput = new HashMap<>();
     private String itemDisplayFormat;
     private boolean itemDisplayOnlyReplaceOnce;
+    private final Map<String, String> placeholdersInput = new HashMap<>();
+    private boolean placeholdersOnlyReplaceOnce;
     public MessageReplacementManager(SweetChat plugin) {
         super(plugin);
     }
 
     @Override
     public void reloadConfig(MemoryConfiguration config) {
+        ConfigurationSection section;
         itemDisplayFormat = config.getString("message-replacements.item-display.format", "[%item%]").replace("%item%", "<item/>");
-        itemDisplayOnlyReplaceOnce = config.getBoolean("one-slot-only-replace-once", true);
+        itemDisplayOnlyReplaceOnce = config.getBoolean("message-replacements.item-display.one-slot-only-replace-once", true);
         itemDisplayInput.clear();
-        ConfigurationSection section = config.getConfigurationSection("message-replacements.item-display.input");
+        section = config.getConfigurationSection("message-replacements.item-display.input");
         if (section != null) for (String key : section.getKeys(false)) {
             String str = section.getString(key);
             EnumItemSource value = Util.valueOr(EnumItemSource.class, str, null);
             if (value != null) {
                 itemDisplayInput.put(key, value);
             } else {
-                warn("[item-display] 的键 " + key + " 对应的值 " + str + " 无效");
+                warn("[item-display] input 中的键 " + key + " 对应的值 " + str + " 无效");
+            }
+        }
+        placeholdersOnlyReplaceOnce = config.getBoolean("message-replacements.placeholders.one-key-only-replace-once", true);
+        placeholdersInput.clear();
+        section = config.getConfigurationSection("message-replacements.placeholders.input");
+        if (section != null) for (String key : section.getKeys(false)) {
+            String value = section.getString(key);
+            if (value != null) {
+                placeholdersInput.put(key, value);
+            } else {
+                warn("[placeholders] input 中的键 " + key + " 对应的值无效");
             }
         }
     }
@@ -79,6 +94,41 @@ public class MessageReplacementManager extends AbstractModule {
                 // 添加标签
                 Component item = toComponent(value.get(inv));
                 builder.editTags(tags -> tags.tag(tagName, Tag.selfClosingInserting(item)));
+            }
+        }
+        return text;
+    }
+
+    @SuppressWarnings("PatternValidation")
+    public String handlePlaceholders(Player player, String inputText, MiniMessage.Builder builder) {
+        String text = inputText;
+        int count = 0;
+        for (String key : placeholdersInput.keySet()) {
+            if (text.contains(key)) count++;
+        }
+        // 以防玩家类似输入 %i <sweet-chat-placeholders-0/> 绕过限制
+        for (int i = 0; i < count; i++) {
+            String tagName = "sweet-chat-placeholders-" + i;
+            if (text.contains("<" + tagName + ">")) {
+                text = text.replace("<" + tagName + ">", "");
+            }
+            if (text.contains("<" + tagName + "/")) {
+                text = text.replace("<" + tagName + "/", "");
+            }
+        }
+        int i = 0;
+        for (Map.Entry<String, String> entry : placeholdersInput.entrySet()) {
+            String key = entry.getKey();
+            if (text.contains(key)) {
+                String tagName = "sweet-chat-placeholders-" + (i++);
+                if (placeholdersOnlyReplaceOnce) {
+                    text = replaceFirst(text, key, "<" + tagName + "/>");
+                } else {
+                    text = text.replace(key, "<" + tagName + "/>");
+                }
+                String str = PAPI.setPlaceholders(player, entry.getValue());
+                Component component = AdventureUtil.miniMessage(str);
+                builder.editTags(tags -> tags.tag(tagName, Tag.selfClosingInserting(component)));
             }
         }
         return text;
