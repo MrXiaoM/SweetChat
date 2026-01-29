@@ -1,0 +1,5 @@
+listener:
+  # 事件监听优先级，服务端会按以下顺序执行事件监听处理器
+  # LOWEST -> LOW -> NORMAL -> HIGH -> HIGHEST
+  # 作为聊天插件，比较建议使用 HIGHEST 优先级
+  priority: HIGHEST
