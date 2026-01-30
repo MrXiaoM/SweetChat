@@ -6,6 +6,9 @@ import net.kyori.adventure.text.TextComponent;
 import java.util.List;
 
 public class ComponentUtils {
+    /**
+     * 将多行 Component 合并为一个 Component
+     */
     public static Component join(List<Component> lines) {
         TextComponent.Builder builder = Component.text();
         for (int i = 0; i < lines.size(); i++) {

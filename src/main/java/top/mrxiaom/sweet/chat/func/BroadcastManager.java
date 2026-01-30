@@ -24,6 +24,9 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+/**
+ * 管理消息跨服广播的模块
+ */
 @AutoRegister
 public class BroadcastManager extends AbstractModule {
     private CrossServerMode mode;

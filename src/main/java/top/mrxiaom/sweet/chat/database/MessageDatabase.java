@@ -20,6 +20,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+/**
+ * 消息广播轮询数据库
+ */
 public class MessageDatabase extends AbstractPluginHolder implements IDatabase {
     private static final DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private static final GsonComponentSerializer serializer = GsonComponentSerializer.gson();

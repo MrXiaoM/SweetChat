@@ -25,6 +25,9 @@ import top.mrxiaom.sweet.chat.impl.mode.LocalMode;
 import java.io.File;
 import java.util.*;
 
+/**
+ * 管理聊天事件监听、聊天格式配置的模块
+ */
 @AutoRegister
 public class ChatListener extends AbstractModule implements Listener {
     private final Map<String, IFormatPartProvider> partRegistry = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -118,7 +121,7 @@ public class ChatListener extends AbstractModule implements Listener {
         }
         return chatModeDefault;
     }
-    
+
     public boolean canReachChatMode(IChatMode mode) {
         for (IChatMode chatMode : chatModeSwitchPrefix.values()) {
             if (chatMode.equals(mode)) {

@@ -16,6 +16,9 @@ import java.util.List;
 
 import static net.kyori.adventure.text.minimessage.tag.standard.StandardTags.*;
 
+/**
+ * 管理消息中 MiniMessage 标签解析的模块
+ */
 @AutoRegister
 public class MiniMessageTagsManager extends AbstractModule {
     public MiniMessageTagsManager(SweetChat plugin) {

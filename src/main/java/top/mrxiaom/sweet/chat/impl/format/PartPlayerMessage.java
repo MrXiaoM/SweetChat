@@ -12,6 +12,9 @@ import top.mrxiaom.sweet.chat.api.IFormatPart;
 import top.mrxiaom.sweet.chat.func.MessageReplacementManager;
 import top.mrxiaom.sweet.chat.func.MiniMessageTagsManager;
 
+/**
+ * 玩家发送的消息部分
+ */
 public class PartPlayerMessage implements IFormatPart {
     @ApiStatus.Internal
     public PartPlayerMessage(ConfigurationSection config) {

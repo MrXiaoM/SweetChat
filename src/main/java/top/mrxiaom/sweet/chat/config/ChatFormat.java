@@ -14,6 +14,9 @@ import top.mrxiaom.sweet.chat.func.ChatListener;
 
 import java.util.List;
 
+/**
+ * 聊天格式配置，在 {@link ChatListener} 中加载。
+ */
 public class ChatFormat {
     private final @NotNull String id;
     private final @Nullable String permission;

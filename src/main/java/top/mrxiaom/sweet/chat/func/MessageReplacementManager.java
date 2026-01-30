@@ -20,6 +20,9 @@ import top.mrxiaom.sweet.chat.config.EnumItemSource;
 
 import java.util.*;
 
+/**
+ * 管理聊天消息内容替换的模块
+ */
 @AutoRegister
 public class MessageReplacementManager extends AbstractModule {
     private final boolean supportTranslatable = Util.isPresent("org.bukkit.Translatable");

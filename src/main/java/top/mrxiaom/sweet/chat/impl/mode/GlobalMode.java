@@ -22,6 +22,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
+/**
+ * 全局广播模式实现
+ */
 public class GlobalMode implements IChatMode, IReloadable {
     private final ChatListener parent;
     private final List<ChatFormat> formats = new ArrayList<>();

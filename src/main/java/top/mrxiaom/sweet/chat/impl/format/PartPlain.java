@@ -14,6 +14,9 @@ import top.mrxiaom.sweet.chat.utils.ComponentUtils;
 
 import java.util.List;
 
+/**
+ * 文本类型的消息部分
+ */
 public class PartPlain implements IFormatPart {
     private final @NotNull String content;
     private final @NotNull List<String> hoverText;

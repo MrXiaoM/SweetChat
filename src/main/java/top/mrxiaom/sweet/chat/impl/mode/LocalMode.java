@@ -19,6 +19,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
+/**
+ * 附近聊天模式实现
+ */
 public class LocalMode implements IChatMode, IReloadable {
     private final ChatListener parent;
     private final List<ChatFormat> formats = new ArrayList<>();
