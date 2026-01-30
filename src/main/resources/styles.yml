@@ -1,0 +1,20 @@
+
+# 按权限分配默认消息样式
+# 权限为 sweetchat.style.键名
+style-by-permission:
+  # sweetchat.style.default
+  default:
+    priority: 1000
+  # sweetchat.style.vip
+  vip:
+    # 匹配优先级，数值越小越先匹配，默认 1000
+    priority: 999
+    # (可选)添加消息颜色，可用颜色名字（BLUE、YELLOW 等）或十六进制颜色（#FF06B5）
+    color: '#D5FFFF'
+    # (可选)添加消息修饰样式，可添加如下值
+    # OBFUSCATED, BOLD, STRIKETHROUGH, UNDERLINED, ITALIC
+    decoration: []
+  svip:
+    priority: 998
+    color: '#FFFFD5'
+    decoration: []

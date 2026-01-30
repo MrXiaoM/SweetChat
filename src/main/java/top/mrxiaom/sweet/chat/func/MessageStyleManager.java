@@ -1,0 +1,66 @@
+package top.mrxiaom.sweet.chat.func;
+
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.MemoryConfiguration;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.permissions.Permissible;
+import org.jetbrains.annotations.Nullable;
+import top.mrxiaom.pluginbase.func.AutoRegister;
+import top.mrxiaom.pluginbase.utils.ConfigUtils;
+import top.mrxiaom.sweet.chat.SweetChat;
+import top.mrxiaom.sweet.chat.config.ChatStyleByPerm;
+
+import java.io.File;
+import java.util.*;
+
+/**
+ * 管理玩家消息默认格式的模块
+ */
+@AutoRegister
+public class MessageStyleManager extends AbstractModule {
+    private final Map<String, ChatStyleByPerm> styleMap = new HashMap<>();
+    private final List<ChatStyleByPerm> styleWithPriority = new ArrayList<>();
+    public MessageStyleManager(SweetChat plugin) {
+        super(plugin);
+    }
+
+    @Override
+    public void reloadConfig(MemoryConfiguration pluginConfig) {
+        File file = plugin.resolve("./styles.yml");
+        if (!file.exists()) {
+            plugin.saveResource("styles.yml", file);
+        }
+        FileConfiguration config = plugin.resolveGotoFlag(ConfigUtils.load(file));
+        styleMap.clear();
+        styleWithPriority.clear();
+        ConfigurationSection section = config.getConfigurationSection("style-by-permission");
+        if (section != null) for (String key : section.getKeys(false)) {
+            ConfigurationSection s = section.getConfigurationSection(key);
+            if (s != null) {
+                ChatStyleByPerm style = new ChatStyleByPerm(this, key, s);
+                styleMap.put(style.id(), style);
+                styleWithPriority.add(style);
+            }
+        }
+        styleWithPriority.sort(Comparator.comparingInt(ChatStyleByPerm::priority));
+    }
+
+    @Nullable
+    public ChatStyleByPerm getStyle(String styleId) {
+        return styleMap.get(styleId);
+    }
+
+    @Nullable
+    public ChatStyleByPerm getStyle(Permissible p) {
+        for (ChatStyleByPerm style : styleWithPriority) {
+            if (style.hasPermission(p)) {
+                return style;
+            }
+        }
+        return null;
+    }
+
+    public static MessageStyleManager inst() {
+        return instanceOf(MessageStyleManager.class);
+    }
+}
