@@ -6,7 +6,6 @@ import org.bukkit.Location;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import sun.jvm.hotspot.debugger.linux.amd64.DwarfParser;
 import top.mrxiaom.pluginbase.utils.AdventureUtil;
 import top.mrxiaom.sweet.chat.api.ChatContext;
 import top.mrxiaom.sweet.chat.api.IChatMode;
