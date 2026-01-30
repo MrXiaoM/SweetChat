@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import top.mrxiaom.pluginbase.func.AutoRegister;
 import top.mrxiaom.pluginbase.utils.AdventureItemStack;
 import top.mrxiaom.pluginbase.utils.AdventureUtil;
@@ -26,6 +27,7 @@ import java.util.*;
 @AutoRegister
 public class MessageReplacementManager extends AbstractModule {
     private final boolean supportTranslatable = Util.isPresent("org.bukkit.Translatable");
+    private final boolean supportLangUtils = Util.isPresent("com.meowj.langutils.lang.LanguageHelper");
     private final Map<String, EnumItemSource> itemDisplayInput = new HashMap<>();
     private String itemDisplayFormat;
     private boolean itemDisplayOnlyReplaceOnce;
@@ -95,7 +97,7 @@ public class MessageReplacementManager extends AbstractModule {
                 if (addedItems.contains(value)) continue;
                 addedItems.add(value);
                 // 添加标签
-                Component item = toComponent(value.get(inv));
+                Component item = toComponent(value.get(inv), player);
                 builder.editTags(tags -> tags.tag(tagName, Tag.selfClosingInserting(item)));
             }
         }
@@ -137,7 +139,11 @@ public class MessageReplacementManager extends AbstractModule {
         return text;
     }
 
-    public Component toComponent(ItemStack item) {
+    public Component toComponent(@NotNull ItemStack item) {
+        return toComponent(item, null);
+    }
+
+    public Component toComponent(@NotNull ItemStack item, @Nullable Player player) {
         Component component;
         Component displayName = AdventureItemStack.getItemDisplayName(item);
         if (displayName != null) {
@@ -146,10 +152,18 @@ public class MessageReplacementManager extends AbstractModule {
                     .build();
             component = AdventureUtil.miniMessage(mm, itemDisplayFormat);
         } else if (supportTranslatable) {
+            // 通过可翻译文本显示物品名
             String key = item.getTranslationKey();
             component = AdventureUtil.miniMessage(itemDisplayFormat.replace("<item/>", "<lang:" + key + ">"));
+        } else if (supportLangUtils) {
+            // 通过 LangUtils 获取物品名
+            if (player == null) {
+                component = Component.text(com.meowj.langutils.lang.LanguageHelper.getItemName(item, "fallback"));
+            } else {
+                component = Component.text(com.meowj.langutils.lang.LanguageHelper.getItemName(item, player));
+            }
         } else {
-            // TODO: 添加 LangUtils 支持，用于获取物品名
+            // 在最糟糕的情况下，通过物品 ID 强行拼接物品英文名
             StringJoiner name = new StringJoiner(" ");
             for (String word : item.getType().name().toLowerCase().split("_")) {
                 if (word.length() == 1) {
