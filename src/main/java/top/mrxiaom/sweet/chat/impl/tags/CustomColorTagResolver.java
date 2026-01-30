@@ -1,4 +1,4 @@
-package top.mrxiaom.sweet.chat.impl.format.tags;
+package top.mrxiaom.sweet.chat.impl.tags;
 
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
@@ -10,22 +10,34 @@ import net.kyori.adventure.text.minimessage.internal.serializer.StyleClaim;
 import net.kyori.adventure.text.minimessage.tag.Tag;
 import net.kyori.adventure.text.minimessage.tag.resolver.ArgumentQueue;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
+import net.kyori.adventure.util.Index;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 @SuppressWarnings({"UnstableApiUsage"})
-public class HexColorTagResolver implements TagResolver, SerializableResolver.Single {
+public class CustomColorTagResolver implements TagResolver, SerializableResolver.Single {
     private static final String COLOR_3 = "c";
     private static final String COLOR_2 = "colour";
     private static final String COLOR = "color";
 
-    public static final TagResolver INSTANCE = new HexColorTagResolver();
-    private static final StyleClaim<TextColor> STYLE = StyleClaim.claim(COLOR, Style::color, (color, emitter) -> {
-        if (!(color instanceof NamedTextColor) && color != null) {
-            emitter.tag(color.asHexString());
-        }
-    });
-    private HexColorTagResolver() {}
+    private final Map<String, TextColor> COLOR_ALIASES = new HashMap<>();
+    private final Index<String, NamedTextColor> NAMES;
+    private final StyleClaim<TextColor> STYLE;
+    public CustomColorTagResolver(List<NamedTextColor> colors) {
+        NAMES = Index.create(NamedTextColor::toString, colors);
+        if (colors.contains(NamedTextColor.DARK_GRAY)) COLOR_ALIASES.put("dark_grey", NamedTextColor.DARK_GRAY);
+        if (colors.contains(NamedTextColor.GRAY)) COLOR_ALIASES.put("grey", NamedTextColor.GRAY);
+        STYLE = StyleClaim.claim(COLOR, Style::color, (color, emitter) -> {
+            if (color instanceof NamedTextColor) {
+                String name = NAMES.key((NamedTextColor) color);
+                if (name != null) emitter.tag(name);
+            }
+        });
+    }
 
     private static boolean isColorOrAbbreviation(final String name) {
         return name.equals(COLOR) || name.equals(COLOR_2) || name.equals(COLOR_3);
@@ -50,10 +62,10 @@ public class HexColorTagResolver implements TagResolver, SerializableResolver.Si
 
     private @Nullable TextColor resolveColorOrNull(String colorName) {
         TextColor color;
-        if (colorName.charAt(0) == TextColor.HEX_CHARACTER) {
-            color = TextColor.fromHexString(colorName);
+        if (COLOR_ALIASES.containsKey(colorName)) {
+            color = COLOR_ALIASES.get(colorName);
         } else {
-            color = null;
+            color = NAMES.value(colorName);
         }
 
         return color;
@@ -70,7 +82,8 @@ public class HexColorTagResolver implements TagResolver, SerializableResolver.Si
     @Override
     public boolean has(@NotNull String name) {
         return isColorOrAbbreviation(name)
-                || TextColor.fromHexString(name) != null;
+                || NAMES.value(name) != null
+                || COLOR_ALIASES.containsKey(name);
     }
 
     @Override

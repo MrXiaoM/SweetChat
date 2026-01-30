@@ -8,8 +8,8 @@ import org.bukkit.permissions.Permissible;
 import top.mrxiaom.pluginbase.func.AutoRegister;
 import top.mrxiaom.pluginbase.utils.AdventureUtil;
 import top.mrxiaom.sweet.chat.SweetChat;
-import top.mrxiaom.sweet.chat.impl.format.tags.CustomColorTagResolver;
-import top.mrxiaom.sweet.chat.impl.format.tags.HexColorTagResolver;
+import top.mrxiaom.sweet.chat.impl.tags.CustomColorTagResolver;
+import top.mrxiaom.sweet.chat.impl.tags.HexColorTagResolver;
 
 import java.util.ArrayList;
 import java.util.List;
