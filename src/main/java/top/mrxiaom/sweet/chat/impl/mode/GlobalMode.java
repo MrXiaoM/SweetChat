@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import top.mrxiaom.pluginbase.actions.ActionProviders;
 import top.mrxiaom.pluginbase.api.IAction;
 import top.mrxiaom.pluginbase.utils.AdventureUtil;
+import top.mrxiaom.sweet.chat.SweetChat;
 import top.mrxiaom.sweet.chat.api.ChatContext;
 import top.mrxiaom.sweet.chat.api.IChatMode;
 import top.mrxiaom.sweet.chat.api.IReloadable;
@@ -62,11 +63,12 @@ public class GlobalMode implements IChatMode, IReloadable {
         }
         if (!requirement.isEmpty()) {
             try {
+                SweetChat plugin = parent.plugin;
                 String expression = ctx.setPlaceholders(requirement);
                 if (new Expression(expression).evaluate().getBooleanValue() == Boolean.TRUE) {
-                    ActionProviders.run(parent.plugin, ctx.player(), successActions);
+                    plugin.getScheduler().runTask(() -> ActionProviders.run(plugin, ctx.player(), successActions));
                 } else {
-                    ActionProviders.run(parent.plugin, ctx.player(), denyActions);
+                    plugin.getScheduler().runTask(() -> ActionProviders.run(plugin, ctx.player(), denyActions));
                     return true;
                 }
             } catch (Throwable t) {
