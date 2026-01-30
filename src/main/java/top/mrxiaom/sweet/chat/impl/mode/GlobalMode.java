@@ -45,6 +45,9 @@ public class GlobalMode implements IChatMode, IReloadable {
                 this.formats.add(chatFormat);
             }
         }
+        if (formats.isEmpty() && parent.canReachChatMode(this)) {
+            parent.warn("[chat-mode] 未对聊天模式 global 配置任何聊天格式");
+        }
         this.formats.sort(Comparator.comparingInt(ChatFormat::priority));
     }
 

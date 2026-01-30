@@ -45,6 +45,8 @@ public class ChatListener extends AbstractModule implements Listener {
         HandlerList.unregisterAll(this);
         File folder = plugin.resolve(config.getString("folder.chat", "./chat"));
         if (!folder.exists()) {
+            plugin.saveResource("chat/global/default.yml", new File(folder, "global/default.yml"));
+            plugin.saveResource("chat/local/default.yml", new File(folder, "local/default.yml"));
             plugin.saveResource("chat/default.yml", new File(folder, "default.yml"));
         }
         reloadChatFormat(folder);
@@ -115,6 +117,15 @@ public class ChatListener extends AbstractModule implements Listener {
             }
         }
         return chatModeDefault;
+    }
+    
+    public boolean canReachChatMode(IChatMode mode) {
+        for (IChatMode chatMode : chatModeSwitchPrefix.values()) {
+            if (chatMode.equals(mode)) {
+                return true;
+            }
+        }
+        return chatModeDefault.equals(mode);
     }
 
     @Nullable

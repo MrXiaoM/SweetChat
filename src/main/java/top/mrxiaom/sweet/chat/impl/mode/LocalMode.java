@@ -6,6 +6,7 @@ import org.bukkit.Location;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import sun.jvm.hotspot.debugger.linux.amd64.DwarfParser;
 import top.mrxiaom.pluginbase.utils.AdventureUtil;
 import top.mrxiaom.sweet.chat.api.ChatContext;
 import top.mrxiaom.sweet.chat.api.IChatMode;
@@ -37,6 +38,9 @@ public class LocalMode implements IChatMode, IReloadable {
             if (p.test(chatFormat.id())) {
                 this.formats.add(chatFormat);
             }
+        }
+        if (formats.isEmpty() && parent.canReachChatMode(this)) {
+            parent.warn("[chat-mode] 未对聊天模式 local 配置任何聊天格式");
         }
         this.formats.sort(Comparator.comparingInt(ChatFormat::priority));
     }

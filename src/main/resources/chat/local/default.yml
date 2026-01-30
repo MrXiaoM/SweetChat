@@ -1,14 +1,14 @@
 # 使用该聊天格式需要什么权限，设为 none 无需权限
 permission: none
 # 该聊天格式的匹配优先级，数值越小越先匹配
-priority: 1000
+priority: 1001
 
 # 当前子服聊天格式
 # 所有可用的聊天格式详见文档
 # https://plugins.mcio.dev/docs/chat/format-parts
 chat-format:
   - type: plain
-    content: '[聊天] <'
+    content: '[附近] <'
 
   - type: plain
     content: '&e%player_name%'
