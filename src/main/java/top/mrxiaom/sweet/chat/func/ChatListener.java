@@ -72,8 +72,8 @@ public class ChatListener extends AbstractModule implements Listener {
         Util.reloadFolder(folder, false, (id, file) -> {
             YamlConfiguration config = ConfigUtils.load(file);
             try {
-                ChatFormat format = new ChatFormat(this, id, config);
-                chatFormatMap.put(id, format);
+                ChatFormat format = new ChatFormat(this, id.replace("\\", "/"), config);
+                chatFormatMap.put(format.id(), format);
             } catch (Throwable t) {
                 warn("[chat] 加载聊天格式配置 " + id + " 时出现错误: " + t.getMessage());
             }
