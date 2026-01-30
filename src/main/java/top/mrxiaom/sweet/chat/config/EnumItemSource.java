@@ -20,7 +20,7 @@ public enum EnumItemSource {
     /**
      * 副手物品
      */
-    OFF_HAND("offhand", PlayerInventory::getItemInOffHand),
+    OFF_HAND("offhand", OffHandAccessor::getItemInOffHand),
     /**
      * 快捷栏左数第1个物品
      */
