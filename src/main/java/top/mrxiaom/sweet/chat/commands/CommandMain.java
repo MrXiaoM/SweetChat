@@ -9,6 +9,7 @@ import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import top.mrxiaom.pluginbase.func.AutoRegister;
+import top.mrxiaom.sweet.chat.Messages;
 import top.mrxiaom.sweet.chat.SweetChat;
 import top.mrxiaom.sweet.chat.func.AbstractModule;
 
@@ -27,10 +28,10 @@ public class CommandMain extends AbstractModule implements CommandExecutor, TabC
             if (args.length == 2 && "database".equalsIgnoreCase(args[1])) {
                 plugin.options.database().reloadConfig();
                 plugin.options.database().reconnect();
-                return t(sender, "&a已重载并重新连接数据库");
+                return Messages.Commands.reload__database.tm(sender);
             }
             plugin.reloadConfig();
-            return t(sender, "&a配置文件已重载");
+            return Messages.Commands.reload__config.tm(sender);
         }
         return true;
     }

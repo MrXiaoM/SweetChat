@@ -1,6 +1,7 @@
 package top.mrxiaom.sweet.chat;
 
 import top.mrxiaom.pluginbase.BukkitPlugin;
+import top.mrxiaom.pluginbase.func.LanguageManager;
 import top.mrxiaom.pluginbase.paper.PaperFactory;
 import top.mrxiaom.pluginbase.utils.inventory.InventoryFactory;
 import top.mrxiaom.pluginbase.utils.item.ItemEditor;
@@ -68,6 +69,12 @@ public class SweetChat extends BukkitPlugin {
 
     @Override
     protected void beforeEnable() {
+        LanguageManager.inst()
+                .setLangFile("messages.yml")
+                .register(Messages.class)
+                .register(Messages.Commands.class)
+                .reload();
+
         options.registerDatabase(
                 messageDatabase = new MessageDatabase(this)
         );
