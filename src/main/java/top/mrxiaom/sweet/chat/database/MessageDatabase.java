@@ -11,6 +11,7 @@ import top.mrxiaom.pluginbase.database.IDatabase;
 import top.mrxiaom.pluginbase.utils.AdventureUtil;
 import top.mrxiaom.sweet.chat.SweetChat;
 import top.mrxiaom.sweet.chat.func.AbstractPluginHolder;
+import top.mrxiaom.sweet.chat.utils.ComponentUtils;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -91,9 +92,9 @@ public class MessageDatabase extends AbstractPluginHolder implements IDatabase {
 
     private void handleMessage(String message) {
         Component component = serializer.deserialize(message);
-        AdventureUtil.sendMessage(Bukkit.getConsoleSender(), component);
+        ComponentUtils.send(Bukkit.getConsoleSender(), component);
         for (Player p : Bukkit.getOnlinePlayers()) {
-            AdventureUtil.sendMessage(p, component);
+            ComponentUtils.send(p, component);
         }
     }
 

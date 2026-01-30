@@ -17,6 +17,7 @@ import java.util.List;
 
 import org.jetbrains.annotations.NotNull;
 import top.mrxiaom.sweet.chat.database.MessageDatabase;
+import top.mrxiaom.sweet.chat.utils.ComponentUtils;
 
 public class SweetChat extends BukkitPlugin {
     public static SweetChat getInstance() {
@@ -69,6 +70,7 @@ public class SweetChat extends BukkitPlugin {
 
     @Override
     protected void beforeEnable() {
+        ComponentUtils.init(this);
         LanguageManager.inst()
                 .setLangFile("messages.yml")
                 .register(Messages.class)
@@ -82,6 +84,7 @@ public class SweetChat extends BukkitPlugin {
 
     @Override
     protected void afterEnable() {
+        ComponentUtils.afterEnable();
         getLogger().info("SweetChat 加载完毕");
     }
 }

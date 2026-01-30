@@ -18,6 +18,7 @@ import top.mrxiaom.sweet.chat.api.ChatContext;
 import top.mrxiaom.sweet.chat.config.ChatFormat;
 import top.mrxiaom.sweet.chat.config.CrossServerMode;
 import top.mrxiaom.sweet.chat.database.MessageDatabase;
+import top.mrxiaom.sweet.chat.utils.ComponentUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -53,9 +54,9 @@ public class BroadcastManager extends AbstractModule {
                 String group = in.readUTF();
                 if (this.group.equals(group)) {
                     Component component = serializer.deserialize(in.readUTF());
-                    AdventureUtil.sendMessage(Bukkit.getConsoleSender(), component);
+                    ComponentUtils.send(Bukkit.getConsoleSender(), component);
                     for (Player p : Bukkit.getOnlinePlayers()) {
-                        AdventureUtil.sendMessage(p, component);
+                        ComponentUtils.send(p, component);
                     }
                 }
             }

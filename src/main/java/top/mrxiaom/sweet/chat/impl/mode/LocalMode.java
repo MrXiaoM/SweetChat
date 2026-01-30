@@ -6,12 +6,12 @@ import org.bukkit.Location;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import top.mrxiaom.pluginbase.utils.AdventureUtil;
 import top.mrxiaom.sweet.chat.api.ChatContext;
 import top.mrxiaom.sweet.chat.api.IChatMode;
 import top.mrxiaom.sweet.chat.api.IReloadable;
 import top.mrxiaom.sweet.chat.config.ChatFormat;
 import top.mrxiaom.sweet.chat.func.ChatListener;
+import top.mrxiaom.sweet.chat.utils.ComponentUtils;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -55,12 +55,12 @@ public class LocalMode implements IChatMode, IReloadable {
             return false;
         }
         TextComponent component = format.build(ctx).build();
-        AdventureUtil.sendMessage(Bukkit.getConsoleSender(), component);
+        ComponentUtils.send(Bukkit.getConsoleSender(), component);
 
         Location loc = player.getLocation();
         for (Player p : player.getWorld().getPlayers()) {
             if (p.getLocation().distance(loc) > radius) continue;
-            AdventureUtil.sendMessage(p, component);
+            ComponentUtils.send(p, component);
         }
 
         return true;

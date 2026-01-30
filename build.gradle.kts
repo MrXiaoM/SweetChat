@@ -31,6 +31,7 @@ dependencies {
     compileOnly("org.jetbrains:annotations:24.0.0")
 
     compileOnly("com.github.MascusJeoraly:LanguageUtils:1.9")
+    compileOnly("com.github.retrooper:packetevents-spigot:2.9.5")
     compileOnly("me.clip:placeholderapi:2.11.6")
 
     base.library("net.kyori:adventure-api:4.22.0")

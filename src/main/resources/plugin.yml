@@ -6,6 +6,7 @@ depend: []
 softdepend: 
   - PlaceholderAPI
   - LangUtils
+  - packetevents
 authors: [ MrXiaoM ]
 folia-supported: true
 commands:

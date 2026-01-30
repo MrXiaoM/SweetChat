@@ -8,7 +8,6 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import top.mrxiaom.pluginbase.actions.ActionProviders;
 import top.mrxiaom.pluginbase.api.IAction;
-import top.mrxiaom.pluginbase.utils.AdventureUtil;
 import top.mrxiaom.sweet.chat.SweetChat;
 import top.mrxiaom.sweet.chat.api.ChatContext;
 import top.mrxiaom.sweet.chat.api.IChatMode;
@@ -16,6 +15,7 @@ import top.mrxiaom.sweet.chat.api.IReloadable;
 import top.mrxiaom.sweet.chat.config.ChatFormat;
 import top.mrxiaom.sweet.chat.func.BroadcastManager;
 import top.mrxiaom.sweet.chat.func.ChatListener;
+import top.mrxiaom.sweet.chat.utils.ComponentUtils;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -78,9 +78,9 @@ public class GlobalMode implements IChatMode, IReloadable {
         }
 
         TextComponent component = format.build(ctx).build();
-        AdventureUtil.sendMessage(Bukkit.getConsoleSender(), component);
+        ComponentUtils.send(Bukkit.getConsoleSender(), component);
         for (Player p : Bukkit.getOnlinePlayers()) {
-            AdventureUtil.sendMessage(p, component);
+            ComponentUtils.send(p, component);
         }
 
         BroadcastManager.inst().broadcast(ctx, format);

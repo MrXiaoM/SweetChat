@@ -1,6 +1,13 @@
 package top.mrxiaom.sweet.chat.func;
 
+import de.tr7zw.changeme.nbtapi.NBTCompound;
+import de.tr7zw.changeme.nbtapi.NBTContainer;
+import de.tr7zw.changeme.nbtapi.NBTReflectionUtil;
+import de.tr7zw.changeme.nbtapi.utils.nmsmappings.ReflectionMethod;
+import net.kyori.adventure.key.Key;
+import net.kyori.adventure.nbt.api.BinaryTagHolder;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.event.HoverEventSource;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.Tag;
@@ -174,8 +181,49 @@ public class MessageReplacementManager extends AbstractModule {
             }
             component = AdventureUtil.miniMessage(itemDisplayFormat.replace("<item/>", name.toString()));
         }
-        HoverEventSource<?> hover = AdventureItemStack.toHoverEvent(item);
+        HoverEventSource<?> hover = toHoverEvent(item);
         return component.hoverEvent(hover);
+    }
+
+    /**
+     * 将物品转换为鼠标悬停显示参数
+     * <p>
+     * 来自 {@link AdventureItemStack#toHoverEvent(ItemStack)}
+     * @param item 物品
+     */
+    @SuppressWarnings({"deprecation"})
+    private static HoverEventSource<?> toHoverEvent(ItemStack item) {
+        // Paper 方案 - 直接转换
+        if (item instanceof HoverEventSource) {
+            return (HoverEventSource<?>) item;
+        }
+        // Spigot 方案 - 读取物品信息与 NBT
+        Object nmsItem = ReflectionMethod.ITEMSTACK_NMSCOPY.run(null, item);
+        NBTContainer nbt = NBTReflectionUtil.convertNMSItemtoNBTCompound(nmsItem);
+        NBTCompound components = nbt.hasTag("components") ? nbt.getCompound("components") : null;
+        NBTCompound tag = nbt.hasTag("tag") ? nbt.getCompound("tag") : null;
+        // 1.12.2 及以下的 子ID
+        Short damage = nbt.hasTag("Damage") ? nbt.getShort("Damage") : null;
+
+        BinaryTagHolder itemTag;
+        if (components != null) { // 1.21.5+
+            itemTag = BinaryTagHolder.binaryTagHolder(components.toString());
+        } else if (tag != null) { // 1.8-1.21.4
+            if (damage != null) {
+                tag.setShort("Damage", damage);
+            }
+            itemTag = BinaryTagHolder.binaryTagHolder(tag.toString());
+        } else { // 未知格式
+            if (damage != null) {
+                itemTag = BinaryTagHolder.binaryTagHolder("{Damage:" + damage + "s}");
+            } else {
+                itemTag = BinaryTagHolder.binaryTagHolder("{}");
+            }
+        }
+        return HoverEvent.showItem(
+                Key.key(nbt.getString("id"), ':'),
+                nbt.getInteger("count"),
+                itemTag);
     }
 
     @NotNull
