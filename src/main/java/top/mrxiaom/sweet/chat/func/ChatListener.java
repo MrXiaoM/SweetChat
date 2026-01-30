@@ -1,6 +1,6 @@
 package top.mrxiaom.sweet.chat.func;
 
-import net.kyori.adventure.text.TextComponent;
+import com.google.common.collect.Maps;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
@@ -13,29 +13,30 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import top.mrxiaom.pluginbase.func.AutoRegister;
-import top.mrxiaom.pluginbase.utils.AdventureUtil;
 import top.mrxiaom.pluginbase.utils.ConfigUtils;
 import top.mrxiaom.pluginbase.utils.Util;
 import top.mrxiaom.sweet.chat.SweetChat;
-import top.mrxiaom.sweet.chat.api.ChatContext;
-import top.mrxiaom.sweet.chat.api.IFormatPart;
-import top.mrxiaom.sweet.chat.api.IFormatPartProvider;
+import top.mrxiaom.sweet.chat.api.*;
 import top.mrxiaom.sweet.chat.config.ChatFormat;
 import top.mrxiaom.sweet.chat.impl.format.PartPlain;
 import top.mrxiaom.sweet.chat.impl.format.PartPlayerMessage;
+import top.mrxiaom.sweet.chat.impl.mode.GlobalMode;
 
 import java.io.File;
 import java.util.*;
 
 @AutoRegister
 public class ChatListener extends AbstractModule implements Listener {
-    private final Map<String, IFormatPartProvider> partRegistry = new HashMap<>();
+    private final Map<String, IFormatPartProvider> partRegistry = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    private final Map<String, IChatMode> chatModeRegistry = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     private final Map<String, ChatFormat> chatFormatMap = new HashMap<>();
-    private final List<ChatFormat> chatFormatWithPriority = new ArrayList<>();
+    private IChatMode chatModeDefault;
+    private final Map<String, IChatMode> chatModeSwitchPrefix = new HashMap<>();
     public ChatListener(SweetChat plugin) {
         super(plugin);
         registerPart("plain", PartPlain::new);
         registerPart("player message", PartPlayerMessage::new);
+        registerChatMode("global", new GlobalMode(this));
     }
 
     @Override
@@ -46,6 +47,7 @@ public class ChatListener extends AbstractModule implements Listener {
             plugin.saveResource("chat/default.yml", new File(folder, "default.yml"));
         }
         reloadChatFormat(folder);
+        reloadChatMode(config);
         EventPriority priority = getPriority(config, "listener.priority", EventPriority.HIGHEST);
         Bukkit.getPluginManager().registerEvent(AsyncPlayerChatEvent.class, this, priority, (listener, event) -> {
             if (event instanceof AsyncPlayerChatEvent) {
@@ -61,36 +63,57 @@ public class ChatListener extends AbstractModule implements Listener {
 
     private void reloadChatFormat(File folder) {
         chatFormatMap.clear();
-        chatFormatWithPriority.clear();
         Util.reloadFolder(folder, false, (id, file) -> {
             YamlConfiguration config = ConfigUtils.load(file);
             try {
                 ChatFormat format = new ChatFormat(this, id, config);
                 chatFormatMap.put(id, format);
-                chatFormatWithPriority.add(format);
             } catch (Throwable t) {
                 warn("[chat] 加载聊天格式配置 " + id + " 时出现错误: " + t.getMessage());
             }
         });
-        chatFormatWithPriority.sort(Comparator.comparingInt(ChatFormat::priority));
         info("[chat] 加载了 " + chatFormatMap.size() + " 个聊天格式配置");
+    }
+
+    private void reloadChatMode(MemoryConfiguration config) {
+        IChatMode chatMode = chatModeRegistry.get(config.getString("chat-mode.default-mode", "GLOBAL"));
+        if (chatMode == null) {
+            this.chatModeDefault = chatModeRegistry.get("global");
+            warn("[chat-mode] 默认聊天模式的值无效");
+        } else {
+            this.chatModeDefault = chatMode;
+        }
+        chatModeSwitchPrefix.clear();
+        ConfigurationSection section = config.getConfigurationSection("chat-mode.switch-mode-prefix");
+        if (section != null) for (String key : section.getKeys(false)) {
+            IChatMode value = chatModeRegistry.get(section.getString(key));
+            if (value == null) {
+                warn("[chat-mode] 前缀 " + key + " 指定的聊天模式无效");
+            } else {
+                chatModeSwitchPrefix.put(key, value);
+            }
+        }
+        for (IChatMode mode : chatModeRegistry.values()) {
+            if (mode instanceof IReloadable) {
+                ((IReloadable) mode).reloadConfig(config);
+            }
+        }
     }
 
     private boolean onChat(Player player, String text) {
         ChatContext ctx = new ChatContext(plugin, player, text);
-        // TODO 实现全局模式、本地模式
-        ChatFormat format = getChatFormat(chatFormatWithPriority, player);
-        if (format == null) {
-            return false;
-        }
+        return getChatMode(ctx).chat(ctx);
+    }
 
-        TextComponent component = format.build(ctx).build();
-        AdventureUtil.sendMessage(Bukkit.getConsoleSender(), component);
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            AdventureUtil.sendMessage(p, component);
+    private IChatMode getChatMode(ChatContext ctx) {
+        for (Map.Entry<String, IChatMode> entry : chatModeSwitchPrefix.entrySet()) {
+            String prefix = entry.getKey();
+            if (ctx.text().startsWith(prefix)) {
+                ctx.text(ctx.text().substring(prefix.length()));
+                return entry.getValue();
+            }
         }
-
-        return true;
+        return chatModeDefault;
     }
 
     @Nullable
@@ -101,6 +124,11 @@ public class ChatListener extends AbstractModule implements Listener {
             }
         }
         return null;
+    }
+
+    @NotNull
+    public Map<String, ChatFormat> getChatFormats() {
+        return Collections.unmodifiableMap(chatFormatMap);
     }
 
     @NotNull
@@ -135,6 +163,14 @@ public class ChatListener extends AbstractModule implements Listener {
 
     public void unregisterPart(@NotNull String partType) {
         partRegistry.remove(partType);
+    }
+
+    public void registerChatMode(@NotNull String modeId, @NotNull IChatMode chatMode) {
+        chatModeRegistry.put(modeId, chatMode);
+    }
+
+    public void unregisterChatMode(@NotNull String modeId) {
+        chatModeRegistry.remove(modeId);
     }
 
     @SuppressWarnings("SameParameterValue")

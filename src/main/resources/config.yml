@@ -37,6 +37,28 @@ message-replacements:
     input:
       '%pos': '&7[&e%player_x%&7, &e%player_y%&7, &e%player_z%&7]'
 
+# 聊天模式设置
+chat-mode:
+  # 玩家直接发送聊天消息的默认聊天模式
+  # GLOBAL - 全局广播（喊话）
+  # LOCAL - 附近聊天
+  default-mode: GLOBAL
+  # 添加什么前缀可快捷切换聊天模式
+  switch-mode-prefix:
+    '!': GLOBAL
+  # 全局广播模式设置
+  global:
+    # 全局广播需求条件，留空则无需条件，例如 '%vault_eco_balance% >= 50'
+    requirement: ''
+    # 发送成功执行命令，例如 '[console]money take %player_name% 50'
+    success-actions: []
+    # 不满足条件时执行命令，例如 '[message]&e你没有足够的金币用于喊话'
+    deny-actions: []
+    # 使用什么聊天格式
+    formats:
+      - 'default'
+      - 'global/*'
+
 # 跨服广播设置
 cross-server:
   # 消息广播模式

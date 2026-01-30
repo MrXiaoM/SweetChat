@@ -2,6 +2,7 @@ package top.mrxiaom.sweet.chat.func;
 
 import com.google.common.io.ByteArrayDataOutput;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.MemoryConfiguration;
@@ -13,6 +14,8 @@ import top.mrxiaom.pluginbase.utils.AdventureUtil;
 import top.mrxiaom.pluginbase.utils.Bytes;
 import top.mrxiaom.pluginbase.utils.Util;
 import top.mrxiaom.sweet.chat.SweetChat;
+import top.mrxiaom.sweet.chat.api.ChatContext;
+import top.mrxiaom.sweet.chat.config.ChatFormat;
 import top.mrxiaom.sweet.chat.config.CrossServerMode;
 import top.mrxiaom.sweet.chat.database.MessageDatabase;
 
@@ -54,6 +57,12 @@ public class BroadcastManager extends AbstractModule {
                 }
             }
         }
+    }
+
+    public void broadcast(ChatContext ctx, ChatFormat format) {
+        if (mode == CrossServerMode.NONE) return;
+        TextComponent component = format.buildCrossServer(ctx).build();
+        broadcast(ctx.player(), component);
     }
 
     public void broadcast(Player player, Component message) {
