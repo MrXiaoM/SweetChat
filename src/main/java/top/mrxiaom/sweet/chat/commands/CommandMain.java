@@ -23,7 +23,12 @@ public class CommandMain extends AbstractModule implements CommandExecutor, TabC
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, @NotNull String[] args) {
-        if (args.length == 1 && "reload".equalsIgnoreCase(args[0]) && sender.isOp()) {
+        if (args.length >= 1 && "reload".equalsIgnoreCase(args[0]) && sender.isOp()) {
+            if (args.length == 2 && "database".equalsIgnoreCase(args[1])) {
+                plugin.options.database().reloadConfig();
+                plugin.options.database().reconnect();
+                return t(sender, "&a已重载并重新连接数据库");
+            }
             plugin.reloadConfig();
             return t(sender, "&a配置文件已重载");
         }
