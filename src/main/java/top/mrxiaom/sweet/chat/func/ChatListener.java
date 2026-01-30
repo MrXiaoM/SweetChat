@@ -1,6 +1,5 @@
 package top.mrxiaom.sweet.chat.func;
 
-import com.google.common.collect.Maps;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
@@ -21,6 +20,7 @@ import top.mrxiaom.sweet.chat.config.ChatFormat;
 import top.mrxiaom.sweet.chat.impl.format.PartPlain;
 import top.mrxiaom.sweet.chat.impl.format.PartPlayerMessage;
 import top.mrxiaom.sweet.chat.impl.mode.GlobalMode;
+import top.mrxiaom.sweet.chat.impl.mode.LocalMode;
 
 import java.io.File;
 import java.util.*;
@@ -37,6 +37,7 @@ public class ChatListener extends AbstractModule implements Listener {
         registerPart("plain", PartPlain::new);
         registerPart("player message", PartPlayerMessage::new);
         registerChatMode("global", new GlobalMode(this));
+        registerChatMode("local", new LocalMode(this));
     }
 
     @Override

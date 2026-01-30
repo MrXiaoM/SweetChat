@@ -58,6 +58,13 @@ chat-mode:
     formats:
       - 'default'
       - 'global/*'
+  # 附近聊天模式设置
+  local:
+    # 周围多少格内的玩家可以看到聊天
+    radius: 64
+    # 使用什么聊天格式
+    formats:
+      - 'local/*'
 
 # 跨服广播设置
 cross-server:
