@@ -106,7 +106,7 @@ public class ChatListener extends AbstractModule implements Listener {
         }
     }
 
-    private boolean onChat(Player player, String text) {
+    public boolean onChat(Player player, String text) {
         ChatContext ctx = new ChatContext(plugin, player, text);
         return getChatMode(ctx).chat(ctx);
     }
