@@ -108,6 +108,13 @@ public class ChatListener extends AbstractModule implements Listener {
 
     public boolean onChat(Player player, String text) {
         ChatContext ctx = new ChatContext(plugin, player, text);
+        // 聊天过滤器检查
+        for (IChatFilter filter : FilterManager.inst().getFilters()) {
+            IChatFilter.Matched match = filter.match(ctx);
+            if (match != null && match.punish()) {
+                return true;
+            }
+        }
         return getChatMode(ctx).chat(ctx);
     }
 

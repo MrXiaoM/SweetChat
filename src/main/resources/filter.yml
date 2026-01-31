@@ -1,0 +1,29 @@
+# 文本池示例
+text-pools:
+  mask: ['*']
+# 操作池示例
+action-pools:
+  unfriendly:
+    - '[message]&e你要发送的聊天消息中包含不友好内容'
+
+# 聊天过滤器配置
+# 可添加多个聊天过滤器，按顺序进行判定
+filters:
+    # 包含以下任意子串时
+  - contains: ['傻逼服务器']
+    # 以下任何正则表达式匹配时
+    regex: []
+    # 过滤器匹配时的惩罚
+    # 'REPLACE 文本池ID' 替换为指定文本池中的随机文本
+    # 'REPLACE_RAW 文本' 替换为指定文本
+    # 'REPLACE_CHAR 文本池ID' 其中的每一个字符都替换为指定文本池中的随机文本
+    # 'REPLACE_CHAR_RAW 文本' 其中的每一个字符都替换为指定文本
+    # 'REPLACE_MESSAGE 本池ID' 将整段聊天消息都替换为指定文本池中的随机文本
+    # 'REPLACE_MESSAGE_RAW 文本' 将整段聊天消息都替换为指定文本
+    # 'ACTION 操作池ID' 禁止发送聊天消息，并执行操作
+    # 'DISALLOW' 禁止发送聊天消息，不进行额外操作
+    punishment: 'REPLACE_MESSAGE_RAW 这服真好玩哎，我去拉我朋友'
+  - contains: ['傻逼', '傻狗', '煞笔']
+    punishment: 'REPLACE_RAW 可爱鬼'
+  - contains: ['对号入座？', '对号入座?']
+    punishment: 'REPLACE_MESSAGE_RAW 您拨打的号码已关机'
