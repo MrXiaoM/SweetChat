@@ -3,7 +3,8 @@ version: '${version}'
 main: top.mrxiaom.sweet.chat.SweetChat
 api-version: 1.13
 depend: []
-softdepend: 
+softdepend:
+  - CMI
   - PlaceholderAPI
   - LangUtils
   - packetevents
