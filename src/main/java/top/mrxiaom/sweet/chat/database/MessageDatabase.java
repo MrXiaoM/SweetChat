@@ -80,7 +80,7 @@ public class MessageDatabase extends AbstractPluginHolder implements IDatabase {
     @Nullable
     private Integer getLastSequence(Connection conn) throws SQLException {
         try (PreparedStatement ps = conn.prepareStatement(
-                "SELECT last_insert_id() FROM `" + TABLE_NAME + "`;"
+                "SELECT sequence FROM `" + TABLE_NAME + "` ORDER BY sequence DESC LIMIT 1;"
         )) {
             ResultSet resultSet = ps.executeQuery();
             if (resultSet.next()) {
