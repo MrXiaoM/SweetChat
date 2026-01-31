@@ -9,6 +9,8 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerChatEvent;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import top.mrxiaom.pluginbase.actions.ActionProviders;
@@ -59,6 +61,11 @@ public class ChatListener extends AbstractModule implements Listener {
         reloadChatFormat(folder);
         reloadChatMode(config);
         EventPriority priority = getPriority(config, "listener.priority", EventPriority.HIGHEST);
+        Plugin cmi = Bukkit.getPluginManager().getPlugin("CMI");
+        if (cmi != null) { // fuck CMI
+            PlayerChatEvent.getHandlerList().unregister(cmi);
+            AsyncPlayerChatEvent.getHandlerList().unregister(cmi);
+        }
         Bukkit.getPluginManager().registerEvent(AsyncPlayerChatEvent.class, this, priority, (listener, event) -> {
             if (event instanceof AsyncPlayerChatEvent) {
                 AsyncPlayerChatEvent e = (AsyncPlayerChatEvent) event;
