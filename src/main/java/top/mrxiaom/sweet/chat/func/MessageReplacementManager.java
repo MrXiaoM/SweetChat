@@ -13,21 +13,23 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.Tag;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import top.mrxiaom.pluginbase.func.AutoRegister;
-import top.mrxiaom.pluginbase.utils.AdventureItemStack;
-import top.mrxiaom.pluginbase.utils.AdventureUtil;
-import top.mrxiaom.pluginbase.utils.Util;
+import top.mrxiaom.pluginbase.utils.*;
 import top.mrxiaom.pluginbase.utils.depend.PAPI;
 import top.mrxiaom.sweet.chat.SweetChat;
 import top.mrxiaom.sweet.chat.config.formats.ComponentBuilder;
 import top.mrxiaom.sweet.chat.config.replacements.EnumItemSource;
 
+import java.io.File;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 管理聊天消息内容替换的模块
@@ -39,14 +41,20 @@ public class MessageReplacementManager extends AbstractModule {
     private final Map<String, EnumItemSource> itemDisplayInput = new HashMap<>();
     private String itemDisplayFormat;
     private boolean itemDisplayOnlyReplaceOnce;
-    private final Map<String, String> placeholdersInput = new HashMap<>();
+    private final Map<String, ComponentBuilder> placeholdersInput = new HashMap<>();
+    private final Map<Pattern, ComponentBuilder> placeholdersRegex = new HashMap<>();
     private boolean placeholdersOnlyReplaceOnce;
     public MessageReplacementManager(SweetChat plugin) {
         super(plugin);
     }
 
     @Override
-    public void reloadConfig(MemoryConfiguration config) {
+    public void reloadConfig(MemoryConfiguration pluginConfig) {
+        File file = plugin.resolve("./replacements.yml");
+        if (!file.exists()) {
+            plugin.saveResource("replacements.yml");
+        }
+        FileConfiguration config = plugin.resolveGotoFlag(ConfigUtils.load(file));
         ConfigurationSection section;
         itemDisplayFormat = config.getString("message-replacements.item-display.format", "[%item%]").replace("%item%", "<item/>");
         itemDisplayOnlyReplaceOnce = config.getBoolean("message-replacements.item-display.one-slot-only-replace-once", true);
@@ -63,14 +71,38 @@ public class MessageReplacementManager extends AbstractModule {
         }
         placeholdersOnlyReplaceOnce = config.getBoolean("message-replacements.placeholders.one-key-only-replace-once", true);
         placeholdersInput.clear();
+        placeholdersRegex.clear();
         section = config.getConfigurationSection("message-replacements.placeholders.input");
         if (section != null) for (String key : section.getKeys(false)) {
-            String value = section.getString(key);
-            if (value != null) {
-                placeholdersInput.put(key, value);
+            if (section.isConfigurationSection(key)) {
+                ConfigurationSection s = section.getConfigurationSection(key);
+                if (s != null) {
+                    placeholdersInput.put(key, new ComponentBuilder(s));
+                    continue;
+                }
             } else {
-                warn("[placeholders] input 中的键 " + key + " 对应的值无效");
+                String value = section.getString(key);
+                if (value != null) {
+                    placeholdersInput.put(key, new ComponentBuilder(value));
+                    continue;
+                }
             }
+            warn("[placeholders] input 中的键 " + key + " 对应的值无效");
+        }
+        for (ConfigurationSection s : ConfigUtils.getSectionList(config, "message-replacements.placeholders.regex")) {
+            String regex = s.getString("regex");
+            if (regex == null) {
+                warn("[placeholders] regex 未设定值");
+                continue;
+            }
+            Pattern pattern;
+            try {
+                pattern = Pattern.compile(regex);
+            } catch (IllegalArgumentException e) {
+                warn("[placeholders] regex 的正则表达式 " + regex + " 无效: " + e.getMessage());
+                continue;
+            }
+            placeholdersRegex.put(pattern, new ComponentBuilder(s));
         }
     }
 
@@ -114,23 +146,28 @@ public class MessageReplacementManager extends AbstractModule {
 
     @SuppressWarnings("PatternValidation")
     public String handlePlaceholders(Player player, String inputText, MiniMessage.Builder builder) {
-        String text = inputText;
-        int count = 0;
-        for (String key : placeholdersInput.keySet()) {
-            if (text.contains(key)) count++;
-        }
-        // 以防玩家类似输入 %i <sweet-chat-placeholders-0/> 绕过限制
-        for (int i = 0; i < count; i++) {
-            String tagName = "sweet-chat-placeholders-" + i;
-            if (text.contains("<" + tagName + ">")) {
-                text = text.replace("<" + tagName + ">", "");
-            }
-            if (text.contains("<" + tagName + "/")) {
-                text = text.replace("<" + tagName + "/", "");
-            }
-        }
+        // 以防玩家类似输入 <sweet-chat-placeholders-0/> 绕过限制
+        String text = inputText.replaceAll("<sweet-chat-placeholders-\\d+/?>", "");
         int i = 0;
-        for (Map.Entry<String, String> entry : placeholdersInput.entrySet()) {
+        for (Map.Entry<Pattern, ComponentBuilder> entry : placeholdersRegex.entrySet()) {
+            Pattern pattern = entry.getKey();
+            Matcher matcher = pattern.matcher(text);
+            if (matcher.find()) {
+                String tagName = "sweet-chat-placeholders-" + (i++);
+                ListPair<String, Object> r = new ListPair<>();
+                for (int j = 0; j <= matcher.groupCount(); j++) {
+                    r.add("$" + j, matcher.group(j));
+                }
+                if (placeholdersOnlyReplaceOnce) {
+                    text = matcher.replaceFirst("<" + tagName + "/>");
+                } else {
+                    text = matcher.replaceAll("<" + tagName + "/>");
+                }
+                Component component = entry.getValue().build(str -> PAPI.setPlaceholders(player, Pair.replace(str, r)));
+                builder.editTags(tags -> tags.tag(tagName, Tag.selfClosingInserting(component)));
+            }
+        }
+        for (Map.Entry<String, ComponentBuilder> entry : placeholdersInput.entrySet()) {
             String key = entry.getKey();
             if (text.contains(key)) {
                 String tagName = "sweet-chat-placeholders-" + (i++);
@@ -139,8 +176,7 @@ public class MessageReplacementManager extends AbstractModule {
                 } else {
                     text = text.replace(key, "<" + tagName + "/>");
                 }
-                String str = PAPI.setPlaceholders(player, entry.getValue());
-                Component component = AdventureUtil.miniMessage(str);
+                Component component = entry.getValue().build(str -> PAPI.setPlaceholders(player, str));
                 builder.editTags(tags -> tags.tag(tagName, Tag.selfClosingInserting(component)));
             }
         }
