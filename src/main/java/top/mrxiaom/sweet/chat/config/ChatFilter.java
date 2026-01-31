@@ -46,7 +46,7 @@ public class ChatFilter implements IChatFilter {
     }
 
     @NotNull
-    private MatcherProvider parsePunishment(
+    public static MatcherProvider parsePunishment(
             @NotNull Map<String, List<String>> textPools,
             @NotNull Map<String, List<IAction>> actionPools,
             @NotNull String[] split
@@ -120,7 +120,7 @@ public class ChatFilter implements IChatFilter {
         return null;
     }
 
-    private interface MatcherProvider {
+    public interface MatcherProvider {
         Matched create(ChatContext ctx, String matchedText);
     }
 
@@ -140,7 +140,7 @@ public class ChatFilter implements IChatFilter {
         }
     }
 
-    public class Replace extends Matched {
+    public static class Replace extends Matched {
         private final List<String> replacement;
         private Replace(ChatContext ctx, String matchedText, List<String> replacement) {
             super(ctx, matchedText);
@@ -156,7 +156,7 @@ public class ChatFilter implements IChatFilter {
         }
     }
 
-    public class ReplaceChar extends Matched {
+    public static class ReplaceChar extends Matched {
         private final List<String> replacement;
         private ReplaceChar(ChatContext ctx, String matchedText, List<String> replacement) {
             super(ctx, matchedText);
@@ -176,7 +176,7 @@ public class ChatFilter implements IChatFilter {
         }
     }
 
-    public class ReplaceMessage extends Matched {
+    public static class ReplaceMessage extends Matched {
         private final List<String> replacement;
         private ReplaceMessage(ChatContext ctx, String matchedText, List<String> replacement) {
             super(ctx, matchedText);
@@ -191,7 +191,7 @@ public class ChatFilter implements IChatFilter {
         }
     }
 
-    public class Action extends Matched {
+    public static class Action extends Matched {
         private final List<IAction> actions;
         private Action(ChatContext ctx, String matchedText, List<IAction> actions) {
             super(ctx, matchedText);
@@ -207,7 +207,7 @@ public class ChatFilter implements IChatFilter {
         }
     }
 
-    public class Disallow extends Matched {
+    public static class Disallow extends Matched {
         private Disallow(ChatContext ctx, String matchedText) {
             super(ctx, matchedText);
         }
