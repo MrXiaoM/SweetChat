@@ -10,11 +10,13 @@ import top.mrxiaom.pluginbase.actions.ActionProviders;
 import top.mrxiaom.pluginbase.api.IAction;
 import top.mrxiaom.sweet.chat.SweetChat;
 import top.mrxiaom.sweet.chat.api.ChatContext;
+import top.mrxiaom.sweet.chat.api.IChatFilter;
 import top.mrxiaom.sweet.chat.api.IChatMode;
 import top.mrxiaom.sweet.chat.api.IReloadable;
 import top.mrxiaom.sweet.chat.config.ChatFormat;
 import top.mrxiaom.sweet.chat.func.BroadcastManager;
 import top.mrxiaom.sweet.chat.func.ChatListener;
+import top.mrxiaom.sweet.chat.func.FilterManager;
 import top.mrxiaom.sweet.chat.utils.ComponentUtils;
 
 import java.util.ArrayList;
@@ -73,6 +75,14 @@ public class GlobalMode implements IChatMode, IReloadable {
                 }
             } catch (Throwable t) {
                 parent.warn("[chat-mode] 全局广播模式条件计算错误", t);
+                return true;
+            }
+        }
+
+        // 聊天过滤器检查
+        for (IChatFilter filter : FilterManager.inst().getFilters()) {
+            IChatFilter.Matched match = filter.match(ctx);
+            if (match != null && match.punish()) {
                 return true;
             }
         }

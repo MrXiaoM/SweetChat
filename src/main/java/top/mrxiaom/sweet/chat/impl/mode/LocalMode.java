@@ -7,10 +7,12 @@ import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import top.mrxiaom.sweet.chat.api.ChatContext;
+import top.mrxiaom.sweet.chat.api.IChatFilter;
 import top.mrxiaom.sweet.chat.api.IChatMode;
 import top.mrxiaom.sweet.chat.api.IReloadable;
 import top.mrxiaom.sweet.chat.config.ChatFormat;
 import top.mrxiaom.sweet.chat.func.ChatListener;
+import top.mrxiaom.sweet.chat.func.FilterManager;
 import top.mrxiaom.sweet.chat.utils.ComponentUtils;
 
 import java.util.ArrayList;
@@ -54,6 +56,15 @@ public class LocalMode implements IChatMode, IReloadable {
         if (format == null) {
             return false;
         }
+
+        // 聊天过滤器检查
+        for (IChatFilter filter : FilterManager.inst().getFilters()) {
+            IChatFilter.Matched match = filter.match(ctx);
+            if (match != null && match.punish()) {
+                return true;
+            }
+        }
+
         TextComponent component = format.build(ctx).build();
         ComponentUtils.send(Bukkit.getConsoleSender(), component);
 
