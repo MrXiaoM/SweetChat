@@ -1,6 +1,5 @@
-package top.mrxiaom.sweet.chat.config;
+package top.mrxiaom.sweet.chat.config.replacements;
 
-import net.kyori.adventure.text.minimessage.tag.TagPattern;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;

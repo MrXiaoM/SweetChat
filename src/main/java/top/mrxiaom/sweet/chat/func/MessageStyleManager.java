@@ -8,7 +8,7 @@ import org.jetbrains.annotations.Nullable;
 import top.mrxiaom.pluginbase.func.AutoRegister;
 import top.mrxiaom.pluginbase.utils.ConfigUtils;
 import top.mrxiaom.sweet.chat.SweetChat;
-import top.mrxiaom.sweet.chat.config.ChatStyleByPerm;
+import top.mrxiaom.sweet.chat.config.styles.ChatStyleByPerm;
 
 import java.io.File;
 import java.util.*;

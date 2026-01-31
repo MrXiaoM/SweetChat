@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import top.mrxiaom.pluginbase.utils.AdventureUtil;
 import top.mrxiaom.sweet.chat.api.ChatContext;
 import top.mrxiaom.sweet.chat.api.IFormatPart;
-import top.mrxiaom.sweet.chat.config.ChatStyleByPerm;
+import top.mrxiaom.sweet.chat.config.styles.ChatStyleByPerm;
 import top.mrxiaom.sweet.chat.func.MessageReplacementManager;
 import top.mrxiaom.sweet.chat.func.MessageStyleManager;
 import top.mrxiaom.sweet.chat.func.MiniMessageTagsManager;

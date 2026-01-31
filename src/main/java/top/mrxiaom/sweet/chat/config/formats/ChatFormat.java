@@ -1,4 +1,4 @@
-package top.mrxiaom.sweet.chat.config;
+package top.mrxiaom.sweet.chat.config.formats;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;

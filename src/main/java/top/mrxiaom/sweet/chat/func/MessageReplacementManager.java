@@ -24,7 +24,8 @@ import top.mrxiaom.pluginbase.utils.AdventureUtil;
 import top.mrxiaom.pluginbase.utils.Util;
 import top.mrxiaom.pluginbase.utils.depend.PAPI;
 import top.mrxiaom.sweet.chat.SweetChat;
-import top.mrxiaom.sweet.chat.config.EnumItemSource;
+import top.mrxiaom.sweet.chat.config.formats.ComponentBuilder;
+import top.mrxiaom.sweet.chat.config.replacements.EnumItemSource;
 
 import java.util.*;
 

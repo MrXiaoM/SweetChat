@@ -16,7 +16,7 @@ import top.mrxiaom.pluginbase.utils.ConfigUtils;
 import top.mrxiaom.pluginbase.utils.Util;
 import top.mrxiaom.sweet.chat.SweetChat;
 import top.mrxiaom.sweet.chat.api.*;
-import top.mrxiaom.sweet.chat.config.ChatFormat;
+import top.mrxiaom.sweet.chat.config.formats.ChatFormat;
 import top.mrxiaom.sweet.chat.impl.format.PartPlain;
 import top.mrxiaom.sweet.chat.impl.format.PartPlayerMessage;
 import top.mrxiaom.sweet.chat.impl.mode.GlobalMode;

@@ -12,7 +12,7 @@ import top.mrxiaom.pluginbase.utils.ConfigUtils;
 import top.mrxiaom.sweet.chat.SweetChat;
 import top.mrxiaom.sweet.chat.api.IChatFilter;
 import top.mrxiaom.sweet.chat.api.IChatFilterProvider;
-import top.mrxiaom.sweet.chat.config.ChatFilter;
+import top.mrxiaom.sweet.chat.config.filters.ChatFilter;
 
 import java.io.File;
 import java.util.*;

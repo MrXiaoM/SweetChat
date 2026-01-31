@@ -1,4 +1,4 @@
-package top.mrxiaom.sweet.chat.config;
+package top.mrxiaom.sweet.chat.config.filters;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;

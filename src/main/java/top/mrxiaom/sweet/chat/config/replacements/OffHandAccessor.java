@@ -1,4 +1,4 @@
-package top.mrxiaom.sweet.chat.config;
+package top.mrxiaom.sweet.chat.config.replacements;
 
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;

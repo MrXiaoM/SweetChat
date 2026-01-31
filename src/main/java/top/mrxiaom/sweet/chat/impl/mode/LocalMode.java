@@ -10,7 +10,7 @@ import top.mrxiaom.sweet.chat.api.ChatContext;
 import top.mrxiaom.sweet.chat.api.IChatFilter;
 import top.mrxiaom.sweet.chat.api.IChatMode;
 import top.mrxiaom.sweet.chat.api.IReloadable;
-import top.mrxiaom.sweet.chat.config.ChatFormat;
+import top.mrxiaom.sweet.chat.config.formats.ChatFormat;
 import top.mrxiaom.sweet.chat.func.ChatListener;
 import top.mrxiaom.sweet.chat.func.FilterManager;
 import top.mrxiaom.sweet.chat.utils.ComponentUtils;
