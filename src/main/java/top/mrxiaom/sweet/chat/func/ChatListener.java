@@ -11,6 +11,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import top.mrxiaom.pluginbase.actions.ActionProviders;
+import top.mrxiaom.pluginbase.api.IAction;
 import top.mrxiaom.pluginbase.func.AutoRegister;
 import top.mrxiaom.pluginbase.utils.ConfigUtils;
 import top.mrxiaom.pluginbase.utils.Util;
@@ -35,6 +37,8 @@ public class ChatListener extends AbstractModule implements Listener {
     private final Map<String, ChatFormat> chatFormatMap = new HashMap<>();
     private IChatMode chatModeDefault;
     private final Map<String, IChatMode> chatModeSwitchPrefix = new HashMap<>();
+    private boolean cancelEventWhenNoFormat;
+    private List<IAction> noFormatActions;
     public ChatListener(SweetChat plugin) {
         super(plugin);
         registerPart("plain", PartPlain::new);
@@ -99,6 +103,8 @@ public class ChatListener extends AbstractModule implements Listener {
                 chatModeSwitchPrefix.put(key, value);
             }
         }
+        cancelEventWhenNoFormat = config.getBoolean("chat-mode.cancel-event-when-no-format-match.enable", true);
+        noFormatActions = ActionProviders.loadActions(config, "chat-mode.cancel-event-when-no-format-match.actions");
         for (IChatMode mode : chatModeRegistry.values()) {
             if (mode instanceof IReloadable) {
                 ((IReloadable) mode).reloadConfig(config);
@@ -108,7 +114,12 @@ public class ChatListener extends AbstractModule implements Listener {
 
     public boolean onChat(Player player, String text) {
         ChatContext ctx = new ChatContext(plugin, player, text);
-        return getChatMode(ctx).chat(ctx);
+        boolean success = getChatMode(ctx).chat(ctx);
+        if (!success && cancelEventWhenNoFormat) {
+            plugin.getScheduler().runTask(() -> ActionProviders.run(plugin, player, noFormatActions));
+            return true;
+        }
+        return success;
     }
 
     private IChatMode getChatMode(ChatContext ctx) {

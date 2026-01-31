@@ -17,6 +17,12 @@ chat-mode:
   # 添加什么前缀可快捷切换聊天模式
   switch-mode-prefix:
     '!': GLOBAL
+  # 当没有任何聊天格式匹配时，是否取消事件禁用原版聊天
+  # 并且执行指定操作，用于发送提示
+  cancel-event-when-no-format-match:
+    enable: true
+    actions:
+      - '[message]&e当前不允许聊天'
   # 全局广播模式设置
   global:
     # 全局广播需求条件，留空则无需条件，例如 '%vault_eco_balance% >= 50'
