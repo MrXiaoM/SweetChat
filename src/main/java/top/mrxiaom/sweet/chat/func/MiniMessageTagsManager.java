@@ -32,10 +32,14 @@ public class MiniMessageTagsManager extends AbstractModule {
             builder.resolver(color());
         } else {
             List<NamedTextColor> enabledColors = new ArrayList<>();
-            for (NamedTextColor color : NamedTextColor.NAMES.values()) {
-                String name = color.toString().replace("_", "-").toLowerCase();
-                if (has(p, "color." + name)) {
-                    enabledColors.add(color);
+            if (has(p, "color.named")) {
+                enabledColors.addAll(NamedTextColor.NAMES.values());
+            } else {
+                for (NamedTextColor color : NamedTextColor.NAMES.values()) {
+                    String name = color.toString().replace("_", "-").toLowerCase();
+                    if (has(p, "color." + name)) {
+                        enabledColors.add(color);
+                    }
                 }
             }
             if (!enabledColors.isEmpty()) {
