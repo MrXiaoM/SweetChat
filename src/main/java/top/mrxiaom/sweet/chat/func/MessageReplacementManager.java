@@ -19,6 +19,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import top.mrxiaom.pluginbase.api.IRunTask;
@@ -26,6 +27,8 @@ import top.mrxiaom.pluginbase.func.AutoRegister;
 import top.mrxiaom.pluginbase.utils.*;
 import top.mrxiaom.pluginbase.utils.depend.PAPI;
 import top.mrxiaom.sweet.chat.SweetChat;
+import top.mrxiaom.sweet.chat.api.ChatContext;
+import top.mrxiaom.sweet.chat.api.IMessageProcessor;
 import top.mrxiaom.sweet.chat.config.formats.ComponentBuilder;
 import top.mrxiaom.sweet.chat.config.replacements.AtConfig;
 import top.mrxiaom.sweet.chat.config.replacements.EnumItemSource;
@@ -45,6 +48,8 @@ import java.util.regex.Pattern;
 public class MessageReplacementManager extends AbstractModule {
     private final boolean supportTranslatable = Util.isPresent("org.bukkit.Translatable");
     private final boolean supportLangUtils = Util.isPresent("com.meowj.langutils.lang.LanguageHelper");
+    private final List<IMessageProcessor> messagePreProcessorRegistry = new ArrayList<>();
+    private final List<IMessageProcessor> messagePostProcessorRegistry = new ArrayList<>();
     private final Map<String, EnumItemSource> itemDisplayInput = new HashMap<>();
     private String itemDisplayFormat;
     private boolean itemDisplayOnlyReplaceOnce;
@@ -57,6 +62,30 @@ public class MessageReplacementManager extends AbstractModule {
     public MessageReplacementManager(SweetChat plugin) {
         super(plugin);
         registerBungee();
+    }
+
+    @ApiStatus.Internal
+    public void registerMessagePreProcessor(@NotNull IMessageProcessor processor) {
+        messagePreProcessorRegistry.add(processor);
+        messagePreProcessorRegistry.sort(Comparator.comparingInt(IMessageProcessor::priority));
+    }
+
+    @ApiStatus.Internal
+    public void unregisterMessagePreProcessor(@NotNull IMessageProcessor processor) {
+        messagePreProcessorRegistry.remove(processor);
+        messagePreProcessorRegistry.sort(Comparator.comparingInt(IMessageProcessor::priority));
+    }
+
+    @ApiStatus.Internal
+    public void registerMessagePostProcessor(@NotNull IMessageProcessor processor) {
+        messagePostProcessorRegistry.add(processor);
+        messagePostProcessorRegistry.sort(Comparator.comparingInt(IMessageProcessor::priority));
+    }
+
+    @ApiStatus.Internal
+    public void unregisterMessagePostProcessor(@NotNull IMessageProcessor processor) {
+        messagePostProcessorRegistry.remove(processor);
+        messagePostProcessorRegistry.sort(Comparator.comparingInt(IMessageProcessor::priority));
     }
 
     @Override
@@ -162,8 +191,24 @@ public class MessageReplacementManager extends AbstractModule {
         return atConfig;
     }
 
+    @NotNull
+    public String handle(@NotNull String inputText, @NotNull ChatContext ctx, @NotNull MiniMessage.Builder builder) {
+        String text = inputText;
+        Player player = ctx.player();
+        for (IMessageProcessor processor : messagePreProcessorRegistry) {
+            text = processor.process(text, ctx, builder);
+        }
+        text = handleItemDisplay(player, text, builder);
+        text = handlePlaceholders(player, text, builder);
+        for (IMessageProcessor processor : messagePostProcessorRegistry) {
+            text = processor.process(text, ctx, builder);
+        }
+        return text;
+    }
+
+    @NotNull
     @SuppressWarnings("PatternValidation")
-    public String handleItemDisplay(Player player, String inputText, MiniMessage.Builder builder) {
+    public String handleItemDisplay(@NotNull Player player, @NotNull String inputText, @NotNull MiniMessage.Builder builder) {
         PlayerInventory inv = player.getInventory();
         Set<EnumItemSource> addedItems = new HashSet<>();
         String text = inputText;
@@ -174,7 +219,7 @@ public class MessageReplacementManager extends AbstractModule {
                 text = text.replace("<" + tagName + ">", "");
             }
             if (text.contains("<" + tagName + "/")) {
-                text = text.replace("<" + tagName + "/", "");
+                text = text.replace("<" + tagName + "/>", "");
             }
         }
         for (Map.Entry<String, EnumItemSource> entry : itemDisplayInput.entrySet()) {
@@ -200,8 +245,9 @@ public class MessageReplacementManager extends AbstractModule {
         return text;
     }
 
+    @NotNull
     @SuppressWarnings("PatternValidation")
-    public String handlePlaceholders(Player player, String inputText, MiniMessage.Builder builder) {
+    public String handlePlaceholders(@NotNull Player player, @NotNull String inputText, @NotNull MiniMessage.Builder builder) {
         // 以防玩家类似输入 <sweet-chat-placeholders-0/> 绕过限制
         String text = inputText.replaceAll("<sweet-chat-placeholders-\\d+/?>", "");
         int i = 0;

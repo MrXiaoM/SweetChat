@@ -1,5 +1,6 @@
 package top.mrxiaom.sweet.chat;
 
+import org.jetbrains.annotations.ApiStatus;
 import top.mrxiaom.pluginbase.BukkitPlugin;
 import top.mrxiaom.pluginbase.actions.ActionProviders;
 import top.mrxiaom.pluginbase.func.LanguageManager;
@@ -14,6 +15,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.net.URL;
+import java.util.Comparator;
 import java.util.List;
 
 import org.jetbrains.annotations.NotNull;
@@ -22,6 +24,7 @@ import top.mrxiaom.sweet.chat.api.*;
 import top.mrxiaom.sweet.chat.database.MessageDatabase;
 import top.mrxiaom.sweet.chat.func.ChatListener;
 import top.mrxiaom.sweet.chat.func.FilterManager;
+import top.mrxiaom.sweet.chat.func.MessageReplacementManager;
 import top.mrxiaom.sweet.chat.func.MessageStyleManager;
 import top.mrxiaom.sweet.chat.utils.ComponentUtils;
 
@@ -110,6 +113,7 @@ public class SweetChat extends BukkitPlugin {
     public static class Api {
         private final ChatListener chatListener = ChatListener.inst();
         private final FilterManager filterManager = FilterManager.inst();
+        private final MessageReplacementManager replacementManager = MessageReplacementManager.inst();
         private final MessageStyleManager styleManager = MessageStyleManager.inst();
         private Api() {}
 
@@ -178,6 +182,38 @@ public class SweetChat extends BukkitPlugin {
          */
         public void unregisterFilterProvider(@NotNull IChatFilterProvider provider) {
             filterManager.unregisterFilterProvider(provider);
+        }
+
+        /**
+         * 注册玩家消息内容与标签预处理器
+         * @param processor 消息处理实现
+         */
+        public void registerMessagePreProcessor(@NotNull IMessageProcessor processor) {
+            replacementManager.registerMessagePreProcessor(processor);
+        }
+
+        /**
+         * 注销玩家消息内容与标签预处理器
+         * @param processor 消息处理实现
+         */
+        public void unregisterMessagePreProcessor(@NotNull IMessageProcessor processor) {
+            replacementManager.unregisterMessagePreProcessor(processor);
+        }
+
+        /**
+         * 注册玩家消息内容与标签后处理器
+         * @param processor 消息处理实现
+         */
+        public void registerMessagePostProcessor(@NotNull IMessageProcessor processor) {
+            replacementManager.registerMessagePostProcessor(processor);
+        }
+
+        /**
+         * 注销玩家消息内容与标签后处理器
+         * @param processor 消息处理实现
+         */
+        public void unregisterMessagePostProcessor(@NotNull IMessageProcessor processor) {
+            replacementManager.unregisterMessagePostProcessor(processor);
         }
 
         /**
