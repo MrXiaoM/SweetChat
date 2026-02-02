@@ -4,7 +4,6 @@ main: top.mrxiaom.sweet.chat.SweetChat
 api-version: 1.13
 depend: []
 softdepend:
-  - CMI
   - PlaceholderAPI
   - LangUtils
   - packetevents
