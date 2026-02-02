@@ -6,6 +6,7 @@ import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permissible;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import top.mrxiaom.pluginbase.func.AutoRegister;
@@ -31,22 +32,26 @@ public class MessageStyleManager extends AbstractModule {
         super(plugin);
     }
 
-    public void registerStylePreProcessor(IComponentProcessor processor) {
+    @ApiStatus.Internal
+    public void registerStylePreProcessor(@NotNull IComponentProcessor processor) {
         stylePreProcessorRegistry.add(processor);
         stylePreProcessorRegistry.sort(Comparator.comparingInt(IComponentProcessor::priority));
     }
 
-    public void unregisterStylePreProcessor(IComponentProcessor processor) {
+    @ApiStatus.Internal
+    public void unregisterStylePreProcessor(@NotNull IComponentProcessor processor) {
         stylePreProcessorRegistry.remove(processor);
         stylePreProcessorRegistry.sort(Comparator.comparingInt(IComponentProcessor::priority));
     }
 
-    public void registerStylePostProcessor(IComponentProcessor processor) {
+    @ApiStatus.Internal
+    public void registerStylePostProcessor(@NotNull IComponentProcessor processor) {
         stylePostProcessorRegistry.add(processor);
         stylePostProcessorRegistry.sort(Comparator.comparingInt(IComponentProcessor::priority));
     }
 
-    public void unregisterStylePostProcessor(IComponentProcessor processor) {
+    @ApiStatus.Internal
+    public void unregisterStylePostProcessor(@NotNull IComponentProcessor processor) {
         stylePostProcessorRegistry.remove(processor);
         stylePostProcessorRegistry.sort(Comparator.comparingInt(IComponentProcessor::priority));
     }

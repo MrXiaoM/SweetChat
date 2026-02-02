@@ -10,6 +10,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import top.mrxiaom.pluginbase.actions.ActionProviders;
@@ -227,18 +228,22 @@ public class ChatListener extends AbstractModule implements Listener {
         return provider.load(config);
     }
 
+    @ApiStatus.Internal
     public void registerPart(@NotNull String partType, @NotNull IFormatPartProvider provider) {
         partRegistry.put(partType, provider);
     }
 
+    @ApiStatus.Internal
     public void unregisterPart(@NotNull String partType) {
         partRegistry.remove(partType);
     }
 
+    @ApiStatus.Internal
     public void registerChatMode(@NotNull String modeId, @NotNull IChatMode chatMode) {
         chatModeRegistry.put(modeId, chatMode);
     }
 
+    @ApiStatus.Internal
     public void unregisterChatMode(@NotNull String modeId) {
         chatModeRegistry.remove(modeId);
     }

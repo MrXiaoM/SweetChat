@@ -3,6 +3,7 @@ package top.mrxiaom.sweet.chat.func;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import top.mrxiaom.pluginbase.actions.ActionProviders;
@@ -29,20 +30,24 @@ public class FilterManager extends AbstractModule implements IChatFilterProvider
         registerFilterProvider(this);
     }
 
-    public void registerFixedFilter(IChatFilter filter) {
+    @ApiStatus.Internal
+    public void registerFixedFilter(@NotNull IChatFilter filter) {
         fixedFilterRegistry.add(filter);
     }
 
-    public void unregisterFixedFilter(IChatFilter filter) {
+    @ApiStatus.Internal
+    public void unregisterFixedFilter(@NotNull IChatFilter filter) {
         fixedFilterRegistry.remove(filter);
     }
 
-    public void registerFilterProvider(IChatFilterProvider provider) {
+    @ApiStatus.Internal
+    public void registerFilterProvider(@NotNull IChatFilterProvider provider) {
         filterProviderRegistry.add(provider);
         filterProviderRegistry.sort(Comparator.comparingInt(IChatFilterProvider::providerPriority));
     }
 
-    public void unregisterFilterProvider(IChatFilterProvider provider) {
+    @ApiStatus.Internal
+    public void unregisterFilterProvider(@NotNull IChatFilterProvider provider) {
         filterProviderRegistry.remove(provider);
         filterProviderRegistry.sort(Comparator.comparingInt(IChatFilterProvider::providerPriority));
     }
