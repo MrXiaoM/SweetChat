@@ -19,6 +19,9 @@ public class ComponentBuilder {
     private final @Nullable ClickEvent.Action clickAction;
     private final @NotNull String clickValue;
     public ComponentBuilder(ConfigurationSection config) {
+        if (config == null) {
+            throw new IllegalArgumentException("未配置格式");
+        }
         this.content = config.getString("content", "");
         this.hoverText = config.getStringList("hover-text");
         this.clickAction = Util.valueOr(ClickEvent.Action.class, config.getString("click.action"), null);

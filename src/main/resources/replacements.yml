@@ -44,3 +44,34 @@ message-replacements:
         click:
           action: RUN_COMMAND
           value: '/res tp $1'
+  # @功能
+  at:
+    # 是否启用该功能
+    enable: true
+    # 正则表达式匹配格式
+    # 如果需要中文名支持，请参考上方的领地示例
+    regex: '@?([A-Za-z0-9\-_]+)'
+    # 提取玩家名
+    player-name:
+      match: '$1'
+      min-length: 1
+      max-length: 24
+    # 在线玩家来源，当某个来源无效时，使用 SERVER 代替
+    # SERVER - 当前子服在线玩家
+    # BUNGEE_CORD - 通过 BC 消息通道定时获取
+    # TAB - 通过 TAB 插件获取
+    player-source: TAB
+    # 在消息中的显示格式
+    # 仅支持变量 %at_target% 代表被 @ 玩家名
+    format:
+      content: '<aqua><b>@%at_target%'
+      hover-text:
+        - '&f在聊天中提到了 &e%at_target%'
+      click:
+        action: SUGGEST_COMMAND
+        value: '/msg %at_target% '
+    # 当目标玩家看到 @ 时，执行操作
+    # 插件会将发送者、被 @ 玩家等信息加入到 insertion 中方便传递
+    # 如果聊天消息是跨服的，仅会执行目标子服中配置的操作
+    target-actions:
+      - '[actionbar]&e&l%sender% &b&l在聊天中提到了你'

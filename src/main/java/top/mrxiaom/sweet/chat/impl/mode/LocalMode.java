@@ -66,13 +66,14 @@ public class LocalMode implements IChatMode, IReloadable {
         }
 
         TextComponent component = format.build(ctx).build();
-        ComponentUtils.send(Bukkit.getConsoleSender(), component);
 
         Location loc = player.getLocation();
+        List<Player> players = new ArrayList<>();
         for (Player p : player.getWorld().getPlayers()) {
             if (p.getLocation().distance(loc) > radius) continue;
-            ComponentUtils.send(p, component);
+            players.add(p);
         }
+        ChatListener.inst().broadcast(players, component);
 
         return true;
     }

@@ -53,10 +53,7 @@ public class BroadcastManager extends AbstractModule {
                 String group = in.readUTF();
                 if (this.group.equals(group)) {
                     Component component = serializer.deserialize(in.readUTF());
-                    ComponentUtils.send(Bukkit.getConsoleSender(), component);
-                    for (Player p : Bukkit.getOnlinePlayers()) {
-                        ComponentUtils.send(p, component);
-                    }
+                    ChatListener.inst().broadcast(Bukkit.getOnlinePlayers(), component);
                 }
             }
         }

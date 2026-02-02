@@ -33,6 +33,7 @@ dependencies {
     compileOnly("com.github.MascusJeoraly:LanguageUtils:1.9")
     compileOnly("com.github.retrooper:packetevents-spigot:2.9.5")
     compileOnly("me.clip:placeholderapi:2.11.6")
+    compileOnly("com.github.NEZNAMY:TAB-API:4.1.8")
 
     base.library("net.kyori:adventure-api:4.22.0")
     base.library("net.kyori:adventure-platform-bukkit:4.4.0")

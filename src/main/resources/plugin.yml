@@ -8,6 +8,7 @@ softdepend:
   - PlaceholderAPI
   - LangUtils
   - packetevents
+  - TAB
 authors: [ MrXiaoM ]
 folia-supported: true
 commands:

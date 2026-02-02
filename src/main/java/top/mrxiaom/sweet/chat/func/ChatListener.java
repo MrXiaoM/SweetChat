@@ -1,5 +1,6 @@
 package top.mrxiaom.sweet.chat.func;
 
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
@@ -17,17 +18,21 @@ import top.mrxiaom.pluginbase.actions.ActionProviders;
 import top.mrxiaom.pluginbase.api.IAction;
 import top.mrxiaom.pluginbase.func.AutoRegister;
 import top.mrxiaom.pluginbase.utils.ConfigUtils;
+import top.mrxiaom.pluginbase.utils.ListPair;
 import top.mrxiaom.pluginbase.utils.Util;
 import top.mrxiaom.sweet.chat.SweetChat;
 import top.mrxiaom.sweet.chat.api.*;
 import top.mrxiaom.sweet.chat.config.formats.ChatFormat;
+import top.mrxiaom.sweet.chat.config.replacements.AtConfig;
 import top.mrxiaom.sweet.chat.impl.format.PartPlain;
 import top.mrxiaom.sweet.chat.impl.format.PartPlayerMessage;
 import top.mrxiaom.sweet.chat.impl.mode.GlobalMode;
 import top.mrxiaom.sweet.chat.impl.mode.LocalMode;
+import top.mrxiaom.sweet.chat.utils.ComponentUtils;
 
 import java.io.File;
 import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * 管理聊天事件监听、聊天格式配置的模块
@@ -116,6 +121,45 @@ public class ChatListener extends AbstractModule implements Listener {
             if (mode instanceof IReloadable) {
                 ((IReloadable) mode).reloadConfig(config);
             }
+        }
+    }
+
+    public void broadcast(Collection<? extends Player> players, Component component) {
+        ComponentUtils.send(Bukkit.getConsoleSender(), component);
+        Map<String, Player> playerMap = new HashMap<>();
+        for (Player player : players) {
+            playerMap.put(player.getName(), player);
+            ComponentUtils.send(player, component);
+        }
+        AtConfig at = MessageReplacementManager.inst().getAtConfig();
+        if (!at.getTargetActions().isEmpty()) {
+            List<String> resolvedPlayers = new ArrayList<>();
+            resolveInsertion(component, insertion -> {
+                if (insertion.startsWith("SweetChat:") && insertion.contains("@")) {
+                    String[] split = insertion.substring(10).split("@", 2);
+                    if (split.length != 2) return;
+                    String sender = split[0];
+                    String target = split[1];
+                    if (resolvedPlayers.contains(target)) return;
+                    resolvedPlayers.add(target);
+                    Player player = playerMap.get(target);
+                    if (player != null) {
+                        ListPair<String, Object> r = new ListPair<>();
+                        r.add("%sender%", sender);
+                        ActionProviders.run(plugin, player, at.getTargetActions(), r);
+                    }
+                }
+            });
+        }
+    }
+
+    private void resolveInsertion(Component component, Consumer<String> handleInsertion) {
+        String insertion = component.insertion();
+        if (insertion != null) {
+            handleInsertion.accept(insertion);
+        }
+        for (Component child : component.children()) {
+            resolveInsertion(child, handleInsertion);
         }
     }
 

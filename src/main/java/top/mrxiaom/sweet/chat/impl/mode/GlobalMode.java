@@ -88,10 +88,7 @@ public class GlobalMode implements IChatMode, IReloadable {
         }
 
         TextComponent component = format.build(ctx).build();
-        ComponentUtils.send(Bukkit.getConsoleSender(), component);
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            ComponentUtils.send(p, component);
-        }
+        ChatListener.inst().broadcast(Bukkit.getOnlinePlayers(), component);
 
         BroadcastManager.inst().broadcast(ctx, format);
         return true;

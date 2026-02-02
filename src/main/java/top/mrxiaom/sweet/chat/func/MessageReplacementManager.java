@@ -1,5 +1,6 @@
 package top.mrxiaom.sweet.chat.func;
 
+import com.google.common.collect.Iterables;
 import de.tr7zw.changeme.nbtapi.NBTCompound;
 import de.tr7zw.changeme.nbtapi.NBTContainer;
 import de.tr7zw.changeme.nbtapi.NBTReflectionUtil;
@@ -11,6 +12,7 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.event.HoverEventSource;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.Tag;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -19,14 +21,19 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import top.mrxiaom.pluginbase.api.IRunTask;
 import top.mrxiaom.pluginbase.func.AutoRegister;
 import top.mrxiaom.pluginbase.utils.*;
 import top.mrxiaom.pluginbase.utils.depend.PAPI;
 import top.mrxiaom.sweet.chat.SweetChat;
 import top.mrxiaom.sweet.chat.config.formats.ComponentBuilder;
+import top.mrxiaom.sweet.chat.config.replacements.AtConfig;
 import top.mrxiaom.sweet.chat.config.replacements.EnumItemSource;
+import top.mrxiaom.sweet.chat.config.replacements.EnumPlayerSource;
 
+import java.io.DataInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -44,12 +51,48 @@ public class MessageReplacementManager extends AbstractModule {
     private final Map<String, ComponentBuilder> placeholdersInput = new HashMap<>();
     private final Map<Pattern, ComponentBuilder> placeholdersRegex = new HashMap<>();
     private boolean placeholdersOnlyReplaceOnce;
+    private AtConfig atConfig;
+    private final List<String> bungeeAllPlayers = new ArrayList<>();
+    private IRunTask bungeeTask;
     public MessageReplacementManager(SweetChat plugin) {
         super(plugin);
+        registerBungee();
+    }
+
+    @Override
+    public void receiveBungee(String subChannel, DataInputStream in) throws IOException {
+        if (subChannel.equals("PlayerList")) {
+            String playerList = in.readUTF();
+            bungeeAllPlayers.clear();
+            for (String playerName : playerList.split(",")) {
+                bungeeAllPlayers.add(playerName.trim());
+            }
+        }
+    }
+
+    private void getAllPlayers() {
+        Player whoever = Iterables.getFirst(Bukkit.getOnlinePlayers(), null);
+        if (whoever != null) {
+            whoever.sendPluginMessage(plugin, "BungeeCord", Bytes.build("PlayerList"));
+        }
+    }
+
+    @Nullable
+    public String getBungeePlayerName(@NotNull String name) {
+        for (String playerName : bungeeAllPlayers) {
+            if (playerName.equalsIgnoreCase(name)) {
+                return playerName;
+            }
+        }
+        return null;
     }
 
     @Override
     public void reloadConfig(MemoryConfiguration pluginConfig) {
+        if (bungeeTask != null) {
+            bungeeTask.cancel();
+            bungeeTask = null;
+        }
         File file = plugin.resolve("./replacements.yml");
         if (!file.exists()) {
             plugin.saveResource("replacements.yml");
@@ -104,6 +147,19 @@ public class MessageReplacementManager extends AbstractModule {
             }
             placeholdersRegex.put(pattern, new ComponentBuilder(s));
         }
+        ConfigurationSection atSection = config.getConfigurationSection("message-replacements.at");
+        if (atSection != null) {
+            atConfig = new AtConfig(this, atSection);
+            if (atConfig.getPlayerSource().equals(EnumPlayerSource.BUNGEE_CORD)) {
+                bungeeTask = plugin.getScheduler().runTaskTimer(this::getAllPlayers, 15 * 20L, 15 * 20L);
+            }
+        } else {
+            atConfig = new AtConfig(this, new MemoryConfiguration());
+        }
+    }
+
+    public AtConfig getAtConfig() {
+        return atConfig;
     }
 
     @SuppressWarnings("PatternValidation")
@@ -179,6 +235,9 @@ public class MessageReplacementManager extends AbstractModule {
                 Component component = entry.getValue().build(str -> PAPI.setPlaceholders(player, str));
                 builder.editTags(tags -> tags.tag(tagName, Tag.selfClosingInserting(component)));
             }
+        }
+        if (atConfig.isEnable()) {
+            text = atConfig.handle(player, inputText, builder);
         }
         return text;
     }
