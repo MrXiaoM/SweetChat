@@ -1,13 +1,18 @@
 package top.mrxiaom.sweet.chat.func;
 
+import net.kyori.adventure.text.Component;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permissible;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import top.mrxiaom.pluginbase.func.AutoRegister;
 import top.mrxiaom.pluginbase.utils.ConfigUtils;
 import top.mrxiaom.sweet.chat.SweetChat;
+import top.mrxiaom.sweet.chat.api.ChatContext;
+import top.mrxiaom.sweet.chat.api.IComponentProcessor;
 import top.mrxiaom.sweet.chat.config.styles.ChatStyleByPerm;
 
 import java.io.File;
@@ -18,10 +23,32 @@ import java.util.*;
  */
 @AutoRegister
 public class MessageStyleManager extends AbstractModule {
+    private final List<IComponentProcessor> stylePreProcessorRegistry = new ArrayList<>();
+    private final List<IComponentProcessor> stylePostProcessorRegistry = new ArrayList<>();
     private final Map<String, ChatStyleByPerm> styleMap = new HashMap<>();
     private final List<ChatStyleByPerm> styleWithPriority = new ArrayList<>();
     public MessageStyleManager(SweetChat plugin) {
         super(plugin);
+    }
+
+    public void registerStylePreProcessor(IComponentProcessor processor) {
+        stylePreProcessorRegistry.add(processor);
+        stylePreProcessorRegistry.sort(Comparator.comparingInt(IComponentProcessor::priority));
+    }
+
+    public void unregisterStylePreProcessor(IComponentProcessor processor) {
+        stylePreProcessorRegistry.remove(processor);
+        stylePreProcessorRegistry.sort(Comparator.comparingInt(IComponentProcessor::priority));
+    }
+
+    public void registerStylePostProcessor(IComponentProcessor processor) {
+        stylePostProcessorRegistry.add(processor);
+        stylePostProcessorRegistry.sort(Comparator.comparingInt(IComponentProcessor::priority));
+    }
+
+    public void unregisterStylePostProcessor(IComponentProcessor processor) {
+        stylePostProcessorRegistry.remove(processor);
+        stylePostProcessorRegistry.sort(Comparator.comparingInt(IComponentProcessor::priority));
     }
 
     @Override
@@ -58,6 +85,26 @@ public class MessageStyleManager extends AbstractModule {
             }
         }
         return null;
+    }
+
+    @NotNull
+    public Component handleStyle(@NotNull Component input, @NotNull ChatContext ctx) {
+        Component component = input.asComponent();
+        Player player = ctx.player();
+        ChatStyleByPerm style = getStyle(player);
+        if (style != null) {
+            ctx.tag("style-by-perm", style);
+        }
+        for (IComponentProcessor processor : stylePreProcessorRegistry) {
+            component = processor.process(component, ctx);
+        }
+        if (style != null) {
+            component = style.apply(component, player);
+        }
+        for (IComponentProcessor processor : stylePostProcessorRegistry) {
+            component = processor.process(component, ctx);
+        }
+        return component;
     }
 
     public static MessageStyleManager inst() {

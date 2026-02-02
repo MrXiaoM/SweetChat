@@ -9,7 +9,6 @@ import org.jetbrains.annotations.NotNull;
 import top.mrxiaom.pluginbase.utils.AdventureUtil;
 import top.mrxiaom.sweet.chat.api.ChatContext;
 import top.mrxiaom.sweet.chat.api.IFormatPart;
-import top.mrxiaom.sweet.chat.config.styles.ChatStyleByPerm;
 import top.mrxiaom.sweet.chat.func.MessageReplacementManager;
 import top.mrxiaom.sweet.chat.func.MessageStyleManager;
 import top.mrxiaom.sweet.chat.func.MiniMessageTagsManager;
@@ -37,12 +36,7 @@ public class PartPlayerMessage implements IFormatPart {
         text = replacer.handleItemDisplay(player, text, builder);
         text = replacer.handlePlaceholders(player, text, builder);
 
-        ChatStyleByPerm style = MessageStyleManager.inst().getStyle(player);
         Component component = AdventureUtil.miniMessage(builder.build(), text);
-        if (style != null) {
-            return style.apply(component, player);
-        } else {
-            return component;
-        }
+        return MessageStyleManager.inst().handleStyle(component, ctx);
     }
 }
