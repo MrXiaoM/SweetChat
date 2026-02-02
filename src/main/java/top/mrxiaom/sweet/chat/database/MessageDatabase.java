@@ -4,15 +4,12 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.MemoryConfiguration;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 import top.mrxiaom.pluginbase.api.IRunTask;
 import top.mrxiaom.pluginbase.database.IDatabase;
-import top.mrxiaom.pluginbase.utils.AdventureUtil;
 import top.mrxiaom.sweet.chat.SweetChat;
 import top.mrxiaom.sweet.chat.func.AbstractPluginHolder;
 import top.mrxiaom.sweet.chat.func.ChatListener;
-import top.mrxiaom.sweet.chat.utils.ComponentUtils;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

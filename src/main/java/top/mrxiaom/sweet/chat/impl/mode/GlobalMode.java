@@ -4,7 +4,6 @@ import com.ezylang.evalex.Expression;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.MemoryConfiguration;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import top.mrxiaom.pluginbase.actions.ActionProviders;
 import top.mrxiaom.pluginbase.api.IAction;
@@ -17,7 +16,6 @@ import top.mrxiaom.sweet.chat.config.formats.ChatFormat;
 import top.mrxiaom.sweet.chat.func.BroadcastManager;
 import top.mrxiaom.sweet.chat.func.ChatListener;
 import top.mrxiaom.sweet.chat.func.FilterManager;
-import top.mrxiaom.sweet.chat.utils.ComponentUtils;
 
 import java.util.ArrayList;
 import java.util.Comparator;

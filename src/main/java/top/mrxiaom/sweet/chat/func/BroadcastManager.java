@@ -14,10 +14,9 @@ import top.mrxiaom.pluginbase.utils.Bytes;
 import top.mrxiaom.pluginbase.utils.Util;
 import top.mrxiaom.sweet.chat.SweetChat;
 import top.mrxiaom.sweet.chat.api.ChatContext;
-import top.mrxiaom.sweet.chat.config.formats.ChatFormat;
 import top.mrxiaom.sweet.chat.config.CrossServerMode;
+import top.mrxiaom.sweet.chat.config.formats.ChatFormat;
 import top.mrxiaom.sweet.chat.database.MessageDatabase;
-import top.mrxiaom.sweet.chat.utils.ComponentUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
