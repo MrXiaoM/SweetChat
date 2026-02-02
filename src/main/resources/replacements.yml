@@ -75,3 +75,4 @@ message-replacements:
     # 如果聊天消息是跨服的，仅会执行目标子服中配置的操作
     target-actions:
       - '[actionbar]&e&l%sender% &b&l在聊天中提到了你'
+      - '[sound]entity.cat.ambient, 1.0, 1.0'
