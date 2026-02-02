@@ -3,6 +3,7 @@ package top.mrxiaom.sweet.chat.impl.mode;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -13,7 +14,6 @@ import top.mrxiaom.sweet.chat.api.IReloadable;
 import top.mrxiaom.sweet.chat.config.formats.ChatFormat;
 import top.mrxiaom.sweet.chat.func.ChatListener;
 import top.mrxiaom.sweet.chat.func.FilterManager;
-import top.mrxiaom.sweet.chat.utils.ComponentUtils;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -69,12 +69,19 @@ public class LocalMode implements IChatMode, IReloadable {
 
         Location loc = player.getLocation();
         List<Player> players = new ArrayList<>();
-        for (Player p : player.getWorld().getPlayers()) {
-            if (p.getLocation().distance(loc) > radius) continue;
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (isOutOfRange(loc, p.getLocation(), radius)) continue;
             players.add(p);
         }
         ChatListener.inst().broadcast(players, component);
 
         return true;
+    }
+
+    private static boolean isOutOfRange(Location loc1, Location loc2, double radius) {
+        World world1 = loc1.getWorld();
+        World world2 = loc2.getWorld();
+        if (world1 == null || world1 != world2) return true;
+        return loc1.distance(loc2) > radius;
     }
 }
