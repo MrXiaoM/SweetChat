@@ -40,7 +40,7 @@ public class PartPlayerMessage implements IFormatPart {
         ChatStyleByPerm style = MessageStyleManager.inst().getStyle(player);
         Component component = AdventureUtil.miniMessage(builder.build(), text);
         if (style != null) {
-            return style.apply(component);
+            return style.apply(component, player);
         } else {
             return component;
         }

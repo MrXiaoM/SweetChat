@@ -14,7 +14,11 @@ style-by-permission:
     # (可选)添加消息修饰样式，可添加如下值
     # OBFUSCATED, BOLD, STRIKETHROUGH, UNDERLINED, ITALIC
     decoration: []
+    # (可选)自定义样式，留空视为不添加自定义样式，如果添加，会覆盖掉上述样式，可使用渐变等格式
+    # 例如 '<gradient:#D5FFFF:#D5BBBB>'，非样式字符会被添加到消息的最前面，支持 PAPI 变量
+    custom: ''
   svip:
     priority: 998
     color: '#FFFFD5'
     decoration: []
+    custom: ''
