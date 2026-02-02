@@ -79,8 +79,6 @@ public class AtConfig {
             sb.append(inputText, lastEnd, matcher.start());
             MatchResult match = matcher.toMatchResult();
 
-            SweetChat.getInstance().info("发现 " + match.group());
-
             String replacement;
             // 按配置提取玩家名
             ListPair<String, Object> regexReplacement = new ListPair<>();
@@ -88,15 +86,12 @@ public class AtConfig {
                 regexReplacement.add("$" + i, match.group(i));
             }
             String playerName = Pair.replace(playerNameMatch, regexReplacement);
-            SweetChat.getInstance().info("玩家名 " + playerName);
             if (playerName.length() < playerNameMinLength || playerName.length() > playerNameMaxLength) {
                 // 玩家名长度不匹配，不进行替换
                 replacement = match.group();
-                SweetChat.getInstance().info("长度不匹配");
             } else {
                 String name = playerSource.correctOnlinePlayerName(playerName);
                 if (name != null) {
-                    SweetChat.getInstance().info("玩家在线");
                     // 目标玩家在线，打包数据，生成标签
                     String tagName = "sweet-chat-at-" + (atIndex++);
                     replacement = "<" + tagName + "/>";
@@ -104,7 +99,6 @@ public class AtConfig {
                     Component component = format.build(str -> str.replace("%at_target%", name)).insertion(insertion);
                     builder.editTags(tags -> tags.tag(tagName, Tag.selfClosingInserting(component)));
                 } else {
-                    SweetChat.getInstance().info("玩家不在线");
                     // 目标玩家不在线，不进行替换
                     replacement = match.group();
                 }
