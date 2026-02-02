@@ -70,7 +70,12 @@ public class LocalMode implements IChatMode, IReloadable {
         Location loc = player.getLocation();
         List<Player> players = new ArrayList<>();
         for (Player p : Bukkit.getOnlinePlayers()) {
-            if (isOutOfRange(loc, p.getLocation(), radius)) continue;
+            if (isOutOfRange(loc, p.getLocation(), radius)) {
+                // 本服有权限的玩家无视附近聊天限制
+                if (!p.hasPermission("sweetchat.local.bypass")) {
+                    continue;
+                }
+            }
             players.add(p);
         }
         ChatListener.inst().broadcast(players, component);
