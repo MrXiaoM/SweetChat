@@ -11,11 +11,9 @@ import top.mrxiaom.pluginbase.api.IAction;
 import top.mrxiaom.pluginbase.utils.ListPair;
 import top.mrxiaom.pluginbase.utils.Pair;
 import top.mrxiaom.pluginbase.utils.Util;
-import top.mrxiaom.sweet.chat.SweetChat;
 import top.mrxiaom.sweet.chat.config.formats.ComponentBuilder;
 import top.mrxiaom.sweet.chat.func.MessageReplacementManager;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
