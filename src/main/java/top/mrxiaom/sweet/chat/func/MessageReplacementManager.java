@@ -102,7 +102,7 @@ public class MessageReplacementManager extends AbstractModule {
     private void getAllPlayers() {
         Player whoever = Iterables.getFirst(Bukkit.getOnlinePlayers(), null);
         if (whoever != null) {
-            whoever.sendPluginMessage(plugin, "BungeeCord", Bytes.build("PlayerList"));
+            whoever.sendPluginMessage(plugin, "BungeeCord", Bytes.build("PlayerList", "ALL"));
         }
     }
 
