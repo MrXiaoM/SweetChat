@@ -1,6 +1,8 @@
 package top.mrxiaom.sweet.chat.func;
 
 import com.google.common.collect.Iterables;
+import com.google.common.io.ByteArrayDataInput;
+import com.google.common.io.ByteArrayDataOutput;
 import de.tr7zw.changeme.nbtapi.NBTCompound;
 import de.tr7zw.changeme.nbtapi.NBTContainer;
 import de.tr7zw.changeme.nbtapi.NBTReflectionUtil;
@@ -19,6 +21,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.plugin.messaging.PluginMessageListener;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -34,9 +37,7 @@ import top.mrxiaom.sweet.chat.config.replacements.AtConfig;
 import top.mrxiaom.sweet.chat.config.replacements.EnumItemSource;
 import top.mrxiaom.sweet.chat.config.replacements.EnumPlayerSource;
 
-import java.io.DataInputStream;
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -45,7 +46,7 @@ import java.util.regex.Pattern;
  * 管理聊天消息内容替换的模块
  */
 @AutoRegister
-public class MessageReplacementManager extends AbstractModule {
+public class MessageReplacementManager extends AbstractModule implements PluginMessageListener {
     private final boolean supportTranslatable = Util.isPresent("org.bukkit.Translatable");
     private final boolean supportLangUtils = Util.isPresent("com.meowj.langutils.lang.LanguageHelper");
     private final List<IMessageProcessor> messagePreProcessorRegistry = new ArrayList<>();
@@ -61,7 +62,7 @@ public class MessageReplacementManager extends AbstractModule {
     private IRunTask bungeeTask;
     public MessageReplacementManager(SweetChat plugin) {
         super(plugin);
-        registerBungee();
+        Bukkit.getMessenger().registerIncomingPluginChannel(plugin, "BungeeCord", this);
     }
 
     @ApiStatus.Internal
@@ -89,8 +90,14 @@ public class MessageReplacementManager extends AbstractModule {
     }
 
     @Override
-    public void receiveBungee(String subChannel, DataInputStream in) throws IOException {
-        if (subChannel.equals("PlayerList")) {
+    public void onPluginMessageReceived(String channel, @NotNull Player player, byte[] message) {
+        if (!channel.equals("BungeeCord")) {
+            return;
+        }
+        ByteArrayDataInput in = Bytes.newDataInput(message);
+        String subchannel = in.readUTF();
+        if (subchannel.equals("PlayerList")) {
+            in.readUTF();
             String playerList = in.readUTF();
             bungeeAllPlayers.clear();
             for (String playerName : playerList.split(",")) {
@@ -98,11 +105,14 @@ public class MessageReplacementManager extends AbstractModule {
             }
         }
     }
-
     private void getAllPlayers() {
         Player whoever = Iterables.getFirst(Bukkit.getOnlinePlayers(), null);
         if (whoever != null) {
-            whoever.sendPluginMessage(plugin, "BungeeCord", Bytes.build("PlayerList", "ALL"));
+            ByteArrayDataOutput out = Bytes.newDataOutput();
+            out.writeUTF("PlayerList");
+            out.writeUTF("ALL");
+
+            whoever.sendPluginMessage(plugin, "BungeeCord", out.toByteArray());
         }
     }
 
