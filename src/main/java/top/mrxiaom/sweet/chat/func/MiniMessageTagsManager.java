@@ -78,10 +78,14 @@ public class MiniMessageTagsManager extends AbstractModule {
             } catch (LinkageError ignored) {}
         }
         if (has(p, "font")) builder.resolver(font());
-        return MiniMessage.builder()
-                .tags(builder.build())
-                .preProcessor(AdventureUtil::legacyToMiniMessage)
-                .postProcessor(it -> it.decoration(TextDecoration.ITALIC, false));
+
+        MiniMessage.Builder miniMessage = MiniMessage.builder();
+
+        miniMessage.tags(builder.build());
+        if (has(p, "legacy")) miniMessage.preProcessor(AdventureUtil::legacyToMiniMessage);
+        miniMessage.postProcessor(it -> it.decoration(TextDecoration.ITALIC, false));
+
+        return miniMessage;
     }
 
     private static boolean has(Permissible p, String... anyPerms) {
