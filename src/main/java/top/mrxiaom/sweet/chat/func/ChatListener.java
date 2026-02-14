@@ -19,6 +19,7 @@ import top.mrxiaom.pluginbase.func.AutoRegister;
 import top.mrxiaom.pluginbase.utils.ConfigUtils;
 import top.mrxiaom.pluginbase.utils.ListPair;
 import top.mrxiaom.pluginbase.utils.Util;
+import top.mrxiaom.sweet.chat.Messages;
 import top.mrxiaom.sweet.chat.SweetChat;
 import top.mrxiaom.sweet.chat.api.*;
 import top.mrxiaom.sweet.chat.config.formats.ChatFormat;
@@ -69,7 +70,16 @@ public class ChatListener extends AbstractModule implements Listener {
             if (event instanceof AsyncPlayerChatEvent) {
                 AsyncPlayerChatEvent e = (AsyncPlayerChatEvent) event;
                 if (e.isCancelled()) return;
-                if (onChat(e.getPlayer(), e.getMessage())) {
+                Player player = e.getPlayer();
+                String message = e.getMessage();
+                try {
+                    if (onChat(player, message)) {
+                        e.setCancelled(true);
+                        e.setFormat("");
+                    }
+                } catch (Throwable t) {
+                    warn("玩家 " + player.getName() + " 发送聊天消息 '" + message + "' 时出现异常", t);
+                    Messages.chat_exception.tm(player);
                     e.setCancelled(true);
                     e.setFormat("");
                 }
