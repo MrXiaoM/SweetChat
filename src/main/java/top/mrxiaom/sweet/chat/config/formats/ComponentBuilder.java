@@ -22,7 +22,11 @@ public class ComponentBuilder {
         if (config == null) {
             throw new IllegalArgumentException("未配置格式");
         }
-        this.content = config.getString("content", "");
+        String content = config.getString("content");
+        if (content == null) {
+            throw new IllegalArgumentException("找不到 content");
+        }
+        this.content = content;
         this.hoverText = config.getStringList("hover-text");
         this.clickAction = Util.valueOr(ClickEvent.Action.class, config.getString("click.action"), null);
         this.clickValue = config.getString("click.value", "");

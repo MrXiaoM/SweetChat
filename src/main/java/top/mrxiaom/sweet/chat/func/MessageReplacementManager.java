@@ -160,7 +160,11 @@ public class MessageReplacementManager extends AbstractModule implements PluginM
             if (section.isConfigurationSection(key)) {
                 ConfigurationSection s = section.getConfigurationSection(key);
                 if (s != null) {
-                    placeholdersInput.put(key, new ComponentBuilder(s));
+                    try {
+                        placeholdersInput.put(key, new ComponentBuilder(s));
+                    } catch (Throwable t) {
+                        warn("[placeholders] input 中的键 " + key + " 对应的值无效: " + t.getMessage());
+                    }
                     continue;
                 }
             } else {
@@ -185,16 +189,24 @@ public class MessageReplacementManager extends AbstractModule implements PluginM
                 warn("[placeholders] regex 的正则表达式 " + regex + " 无效: " + e.getMessage());
                 continue;
             }
-            placeholdersRegex.put(pattern, new ComponentBuilder(s));
-        }
-        ConfigurationSection atSection = config.getConfigurationSection("message-replacements.at");
-        if (atSection != null) {
-            atConfig = new AtConfig(this, atSection);
-            if (atConfig.getPlayerSource().equals(EnumPlayerSource.BUNGEE_CORD)) {
-                bungeeTask = plugin.getScheduler().runTaskTimer(this::getAllPlayers, 15 * 20L, 15 * 20L);
+            try {
+                placeholdersRegex.put(pattern, new ComponentBuilder(s));
+            } catch (Throwable t) {
+                warn("[placeholders] regex 的正则表达式 " + regex + " 对应的值无效: " + t.getMessage());
             }
-        } else {
-            atConfig = new AtConfig(this, new MemoryConfiguration());
+        }
+        try {
+            ConfigurationSection atSection = config.getConfigurationSection("message-replacements.at");
+            if (atSection != null) {
+                atConfig = new AtConfig(this, atSection);
+                if (atConfig.getPlayerSource().equals(EnumPlayerSource.BUNGEE_CORD)) {
+                    bungeeTask = plugin.getScheduler().runTaskTimer(this::getAllPlayers, 15 * 20L, 15 * 20L);
+                }
+            } else {
+                atConfig = new AtConfig(this, new MemoryConfiguration());
+            }
+        } catch (Throwable t) {
+            warn("[at] 配置存在错误: " + t.getMessage());
         }
     }
 
