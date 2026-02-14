@@ -4,9 +4,11 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import top.mrxiaom.pluginbase.BukkitPlugin;
 import top.mrxiaom.sweet.chat.depend.PacketEventsSupport;
 import top.mrxiaom.sweet.chat.func.AbstractPluginHolder;
 
@@ -20,7 +22,18 @@ public class ComponentUtils {
     }
 
     public static void afterEnable() {
+        BukkitPlugin plugin = BukkitPlugin.getInstance();
         supportPacketEvents = AbstractPluginHolder.get(PacketEventsSupport.class).isPresent();
+        CommandSender sender = Bukkit.getConsoleSender();
+        if (sender instanceof Audience) {
+            plugin.info("使用服务端内置消息发送方案");
+            return;
+        }
+        if (supportPacketEvents) {
+            plugin.info("使用 PacketEvents 消息发送方案");
+            return;
+        }
+        plugin.info("使用 Adventure Bukkit Platform 消息发送方案");
     }
 
     public static void send(CommandSender sender, Component component) {
