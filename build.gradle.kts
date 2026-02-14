@@ -7,7 +7,7 @@ plugins {
 
 buildscript {
     repositories.mavenCentral()
-    dependencies.classpath("top.mrxiaom:LibrariesResolver-Gradle:1.7.5")
+    dependencies.classpath("top.mrxiaom:LibrariesResolver-Gradle:1.7.6")
 }
 val base = top.mrxiaom.gradle.LibraryHelper(project)
 
@@ -101,9 +101,6 @@ tasks {
     }
     javadoc {
         (options as? StandardJavadocDocletOptions)?.apply {
-            links("https://hub.spigotmc.org/javadocs/spigot/")
-            links("https://ci.md-5.net/job/BungeeCord/ws/chat/target/apidocs/")
-
             locale("zh_CN")
             charset("UTF-8")
             encoding("UTF-8")
@@ -121,10 +118,13 @@ tasks {
 publishing {
     publications {
         create<MavenPublication>("maven") {
-            from(components.getByName("java"))
             groupId = project.group.toString()
             artifactId = rootProject.name
             version = project.version.toString()
+
+            artifact(tasks["shadowJar"]).classifier = null
+            artifact(tasks["sourcesJar"])
+            artifact(tasks["javadocJar"])
         }
     }
 }
