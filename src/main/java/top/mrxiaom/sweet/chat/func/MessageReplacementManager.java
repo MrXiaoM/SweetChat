@@ -294,7 +294,7 @@ public class MessageReplacementManager extends AbstractModule implements PluginM
             }
         }
         if (atConfig.isEnable()) {
-            text = atConfig.handle(player, inputText, builder);
+            text = atConfig.handle(player, text, builder);
         }
         return text;
     }
