@@ -327,11 +327,11 @@ public class MessageReplacementManager extends AbstractModule implements PluginM
             } else {
                 component = getVanillaName(item, player);
             }
+            HoverEventSource<?> hover = toHoverEvent(item);
+            return component.hoverEvent(hover);
         } else {
-            component = getVanillaName(item, player);
+            return getVanillaName(item, player);
         }
-        HoverEventSource<?> hover = toHoverEvent(item);
-        return component.hoverEvent(hover);
     }
 
     private Component getVanillaName(@NotNull ItemStack item, @Nullable Player player) {
