@@ -35,6 +35,16 @@ public class ComponentBuilder {
         this.clickValue = "";
     }
 
+    @Override
+    public String toString() {
+        return "ComponentBuilder{" +
+                "content='" + content + '\'' +
+                ", hoverText=" + (hoverText.isEmpty() ? "[]" : ("['" + String.join("', '", hoverText) + "']")) +
+                ", clickAction=" + clickAction +
+                ", clickValue='" + clickValue + '\'' +
+                '}';
+    }
+
     public Component build(Function<String, String> replacer) {
         if (content.isEmpty()) {
             return Component.empty();
