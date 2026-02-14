@@ -15,6 +15,7 @@ import net.kyori.adventure.text.event.HoverEventSource;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.Tag;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -304,22 +305,35 @@ public class MessageReplacementManager extends AbstractModule implements PluginM
 
     public Component toComponent(@NotNull ItemStack item, @Nullable Player player) {
         Component component;
-        Component displayName = AdventureItemStack.getItemDisplayName(item);
-        if (displayName != null) {
-            MiniMessage mm = AdventureUtil.builder()
-                    .editTags(tags -> tags.tag("item", Tag.selfClosingInserting(displayName)))
-                    .build();
-            component = AdventureUtil.miniMessage(mm, itemDisplayFormat);
-        } else if (supportTranslatable) {
+        if (item.getAmount() > 0 && !item.getType().equals(Material.AIR)) {
+            Component displayName = AdventureItemStack.getItemDisplayName(item);
+            if (displayName != null) {
+                MiniMessage mm = AdventureUtil.builder()
+                        .editTags(tags -> tags.tag("item", Tag.selfClosingInserting(displayName)))
+                        .build();
+                component = AdventureUtil.miniMessage(mm, itemDisplayFormat);
+            } else {
+                component = getVanillaName(item, player);
+            }
+        } else {
+            component = getVanillaName(item, player);
+        }
+        HoverEventSource<?> hover = toHoverEvent(item);
+        return component.hoverEvent(hover);
+    }
+
+    private Component getVanillaName(@NotNull ItemStack item, @Nullable Player player) {
+        String itemName;
+        if (supportTranslatable) {
             // 通过可翻译文本显示物品名
             String key = item.getTranslationKey();
-            component = AdventureUtil.miniMessage(itemDisplayFormat.replace("<item/>", "<lang:" + key + ">"));
+            itemName = "<lang:" + key + ">";
         } else if (supportLangUtils) {
             // 通过 LangUtils 获取物品名
             if (player == null) {
-                component = Component.text(com.meowj.langutils.lang.LanguageHelper.getItemName(item, "fallback"));
+                itemName = com.meowj.langutils.lang.LanguageHelper.getItemName(item, "fallback");
             } else {
-                component = Component.text(com.meowj.langutils.lang.LanguageHelper.getItemName(item, player));
+                itemName = com.meowj.langutils.lang.LanguageHelper.getItemName(item, player);
             }
         } else {
             // 在最糟糕的情况下，通过物品 ID 强行拼接物品英文名
@@ -331,10 +345,9 @@ public class MessageReplacementManager extends AbstractModule implements PluginM
                     name.add(Character.toUpperCase(word.charAt(0)) + word.substring(1));
                 }
             }
-            component = AdventureUtil.miniMessage(itemDisplayFormat.replace("<item/>", name.toString()));
+            itemName = name.toString();
         }
-        HoverEventSource<?> hover = toHoverEvent(item);
-        return component.hoverEvent(hover);
+        return AdventureUtil.miniMessage(itemDisplayFormat.replace("<item/>", itemName));
     }
 
     /**
