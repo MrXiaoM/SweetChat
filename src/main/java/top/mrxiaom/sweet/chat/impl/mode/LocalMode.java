@@ -83,6 +83,11 @@ public class LocalMode implements IChatMode, IReloadable {
         return true;
     }
 
+    @Override
+    public String modeName() {
+        return "local";
+    }
+
     private static boolean isOutOfRange(Location loc1, Location loc2, double radius) {
         World world1 = loc1.getWorld();
         World world2 = loc2.getWorld();

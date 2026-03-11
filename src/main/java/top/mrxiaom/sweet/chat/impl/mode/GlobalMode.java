@@ -91,4 +91,9 @@ public class GlobalMode implements IChatMode, IReloadable {
         BroadcastManager.inst().broadcast(ctx, format);
         return true;
     }
+
+    @Override
+    public String modeName() {
+        return "global";
+    }
 }

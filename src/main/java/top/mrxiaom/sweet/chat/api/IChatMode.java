@@ -14,4 +14,11 @@ public interface IChatMode {
      * @return 是否取消聊天事件
      */
     boolean chat(@NotNull ChatContext ctx);
+
+    /**
+     * 获取聊天模式名称
+     */
+    default String modeName() {
+        return getClass().getSimpleName();
+    }
 }
