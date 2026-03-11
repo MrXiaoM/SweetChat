@@ -87,7 +87,7 @@ public class CommandMain extends AbstractModule implements CommandExecutor, TabC
             plugin.reloadConfig();
             return Messages.Commands.reload__config.tm(sender);
         }
-        return true;
+        return (sender.isOp() ? Messages.Commands.help__admin : Messages.Commands.help__player).tm(sender);
     }
 
     private static final List<String> listArg0 = Lists.newArrayList();

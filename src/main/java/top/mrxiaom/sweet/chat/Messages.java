@@ -22,5 +22,17 @@ public class Messages {
 
         public static final Message reload__config = field("&a配置文件已重载");
         public static final Message reload__database = field("&a已重载并重新连接数据库");
+
+        public static final Message help__player = field(
+                "&b&lSweetChat 帮助命令",
+                "&f/chat mode <模式/clear> &e设置默认聊天模式"
+        );
+        public static final Message help__admin = field(
+                "&b&lSweetChat 帮助命令",
+                "&f/chat mode <模式/clear> [玩家] &e设置玩家的默认聊天模式",
+                "&f/chat sudo <玩家> […消息内容] &e以某个在线玩家的身份发送消息",
+                "&f/chat reload &e重载插件配置文件",
+                "&f/chat reload database &e重载并重新连接数据库"
+        );
     }
 }
