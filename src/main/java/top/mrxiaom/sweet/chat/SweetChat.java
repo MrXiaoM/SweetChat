@@ -15,6 +15,7 @@ import top.mrxiaom.pluginbase.utils.scheduler.FoliaLibScheduler;
 import top.mrxiaom.sweet.chat.actions.ActionSound;
 import top.mrxiaom.sweet.chat.api.*;
 import top.mrxiaom.sweet.chat.database.MessageDatabase;
+import top.mrxiaom.sweet.chat.database.ModeDatabase;
 import top.mrxiaom.sweet.chat.func.ChatListener;
 import top.mrxiaom.sweet.chat.func.FilterManager;
 import top.mrxiaom.sweet.chat.func.MessageReplacementManager;
@@ -76,9 +77,14 @@ public class SweetChat extends BukkitPlugin {
     }
 
     private MessageDatabase messageDatabase;
+    private ModeDatabase modeDatabase;
 
     public MessageDatabase getMessageDatabase() {
         return messageDatabase;
+    }
+
+    public ModeDatabase getModeDatabase() {
+        return modeDatabase;
     }
 
     @Override
@@ -93,7 +99,8 @@ public class SweetChat extends BukkitPlugin {
         ActionProviders.registerActionProviders(ActionSound.PROVIDER);
 
         options.registerDatabase(
-                messageDatabase = new MessageDatabase(this)
+                messageDatabase = new MessageDatabase(this),
+                modeDatabase = new ModeDatabase(this)
         );
     }
 

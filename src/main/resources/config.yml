@@ -15,8 +15,9 @@ chat-mode:
   # LOCAL - 附近聊天
   default-mode: GLOBAL
   # 添加什么前缀可快捷切换聊天模式
+  # 使用 | 来分割多个聊天模式，用于忽略与默认模式匹配的模式
   switch-mode-prefix:
-    '!': GLOBAL
+    '!': GLOBAL|LOCAL
   # 当没有任何聊天格式匹配时，是否取消事件禁用原版聊天
   # 并且执行指定操作，用于发送提示
   cancel-event-when-no-format-match:

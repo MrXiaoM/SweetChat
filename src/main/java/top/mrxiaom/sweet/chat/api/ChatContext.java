@@ -11,6 +11,7 @@ import top.mrxiaom.sweet.chat.SweetChat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * 玩家聊天上下文
@@ -39,6 +40,20 @@ public class ChatContext {
      */
     public Player player() {
         return player;
+    }
+
+    /**
+     * 玩家 UUID
+     */
+    public UUID uuid() {
+        return player.getUniqueId();
+    }
+
+    /**
+     * 玩家名称
+     */
+    public String name() {
+        return player.getName();
     }
 
     /**

@@ -16,6 +16,7 @@ import org.jetbrains.annotations.Nullable;
 import top.mrxiaom.pluginbase.actions.ActionProviders;
 import top.mrxiaom.pluginbase.api.IAction;
 import top.mrxiaom.pluginbase.func.AutoRegister;
+import top.mrxiaom.pluginbase.utils.CollectionUtils;
 import top.mrxiaom.pluginbase.utils.ConfigUtils;
 import top.mrxiaom.pluginbase.utils.ListPair;
 import top.mrxiaom.pluginbase.utils.Util;
@@ -43,7 +44,7 @@ public class ChatListener extends AbstractModule implements Listener {
     private final Map<String, IChatMode> chatModeRegistry = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     private final Map<String, ChatFormat> chatFormatMap = new HashMap<>();
     private IChatMode chatModeDefault;
-    private final Map<String, IChatMode> chatModeSwitchPrefix = new HashMap<>();
+    private final Map<String, List<IChatMode>> chatModeSwitchPrefix = new HashMap<>();
     private boolean cancelEventWhenNoFormat;
     private List<IAction> noFormatActions;
     public ChatListener(SweetChat plugin) {
@@ -112,11 +113,20 @@ public class ChatListener extends AbstractModule implements Listener {
         chatModeSwitchPrefix.clear();
         ConfigurationSection section = config.getConfigurationSection("chat-mode.switch-mode-prefix");
         if (section != null) for (String key : section.getKeys(false)) {
-            IChatMode value = chatModeRegistry.get(section.getString(key));
-            if (value == null) {
-                warn("[chat-mode] 前缀 " + key + " 指定的聊天模式无效");
-            } else {
-                chatModeSwitchPrefix.put(key, value);
+            List<IChatMode> modes = new ArrayList<>();
+            String modeValue = section.getString(key);
+            if (modeValue == null) continue;
+            for (String s : CollectionUtils.split(modeValue, '|')) {
+                if (s.trim().isEmpty()) continue;
+                IChatMode value = chatModeRegistry.get(s.trim());
+                if (value == null) {
+                    warn("[chat-mode] 前缀 " + key + " 指定的聊天模式 " + s.trim() + " 无效");
+                } else {
+                    modes.add(value);
+                }
+            }
+            if (!modes.isEmpty()) {
+                chatModeSwitchPrefix.put(key, modes);
             }
         }
         cancelEventWhenNoFormat = config.getBoolean("chat-mode.cancel-event-when-no-format-match.enable", true);
@@ -177,20 +187,40 @@ public class ChatListener extends AbstractModule implements Listener {
         return success;
     }
 
-    private IChatMode getChatMode(ChatContext ctx) {
-        for (Map.Entry<String, IChatMode> entry : chatModeSwitchPrefix.entrySet()) {
-            String prefix = entry.getKey();
-            if (ctx.text().startsWith(prefix)) {
-                ctx.text(ctx.text().substring(prefix.length()));
-                return entry.getValue();
-            }
-        }
+    public IChatMode getChatModeDefault() {
         return chatModeDefault;
     }
 
+    @Nullable
+    public IChatMode getChatMode(String str) {
+        return chatModeRegistry.get(str);
+    }
+
+    private IChatMode getChatMode(ChatContext ctx) {
+        IChatMode current;
+        String mode = plugin.getModeDatabase().getMode(ctx.uuid());
+        if (!mode.isEmpty()) {
+            current = chatModeRegistry.getOrDefault(mode, chatModeDefault);
+        } else {
+            current = chatModeDefault;
+        }
+        for (Map.Entry<String, List<IChatMode>> entry : chatModeSwitchPrefix.entrySet()) {
+            String prefix = entry.getKey();
+            if (ctx.text().startsWith(prefix)) {
+                List<IChatMode> list = entry.getValue();
+                for (IChatMode chatMode : list) {
+                    if (chatMode.equals(current)) continue;
+                    ctx.text(ctx.text().substring(prefix.length()));
+                    return chatMode;
+                }
+            }
+        }
+        return current;
+    }
+
     public boolean canReachChatMode(IChatMode mode) {
-        for (IChatMode chatMode : chatModeSwitchPrefix.values()) {
-            if (chatMode.equals(mode)) {
+        for (List<IChatMode> chatModes : chatModeSwitchPrefix.values()) {
+            if (chatModes.contains(mode)) {
                 return true;
             }
         }

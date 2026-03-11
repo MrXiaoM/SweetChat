@@ -10,9 +10,11 @@ import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import top.mrxiaom.pluginbase.func.AutoRegister;
+import top.mrxiaom.pluginbase.utils.Pair;
 import top.mrxiaom.pluginbase.utils.Util;
 import top.mrxiaom.sweet.chat.Messages;
 import top.mrxiaom.sweet.chat.SweetChat;
+import top.mrxiaom.sweet.chat.api.IChatMode;
 import top.mrxiaom.sweet.chat.func.AbstractModule;
 import top.mrxiaom.sweet.chat.func.ChatListener;
 
@@ -27,6 +29,42 @@ public class CommandMain extends AbstractModule implements CommandExecutor, TabC
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, @NotNull String[] args) {
+        if (args.length >= 2 && "mode".equalsIgnoreCase(args[0]) && sender.hasPermission("sweet.chat.mode")) {
+            String modeStr = args[1];
+            boolean clear;
+            if (modeStr.equalsIgnoreCase("clear")) {
+                clear = true;
+            } else {
+                clear = false;
+                IChatMode mode = ChatListener.inst().getChatMode(modeStr);
+                if (mode == null || !sender.hasPermission("sweet.chat.mode.set." + modeStr)) {
+                    return Messages.Commands.mode__not_found.tm(sender);
+                }
+            }
+            Player player;
+            if (args.length > 2) {
+                if (!sender.hasPermission("sweet.chat.mode.others")) {
+                    return Messages.Commands.no_permission.tm(sender);
+                }
+                player = Util.getOnlinePlayer(args[2]).orElse(null);
+                if (player == null) {
+                    return Messages.player__not_online.tm(sender);
+                }
+            } else if (sender instanceof Player) {
+                player = (Player) sender;
+            } else {
+                return Messages.player__only.tm(sender);
+            }
+            plugin.getScheduler().runTaskAsync(() -> {
+                plugin.getModeDatabase().setMode(player.getUniqueId(), clear ? "" : modeStr);
+                if (clear) {
+                    Messages.Commands.mode__clear.tm(player);
+                } else {
+                    Messages.Commands.mode__set.tm(player, Pair.of("%mode%", modeStr));
+                }
+            });
+            return true;
+        }
         if (args.length > 1 && "sudo".equalsIgnoreCase(args[0]) && sender.isOp()) {
             Player player = Util.getOnlinePlayer(args[1]).orElse(null);
             if (player == null) {
