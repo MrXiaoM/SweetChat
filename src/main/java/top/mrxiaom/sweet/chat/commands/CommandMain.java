@@ -90,15 +90,35 @@ public class CommandMain extends AbstractModule implements CommandExecutor, TabC
         return (sender.isOp() ? Messages.Commands.help__admin : Messages.Commands.help__player).tm(sender);
     }
 
-    private static final List<String> listArg0 = Lists.newArrayList();
-    private static final List<String> listOpArg0 = Lists.newArrayList("sudo", "reload");
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String alias, @NotNull String[] args) {
         if (args.length == 1) {
-            return startsWith(sender.isOp() ? listOpArg0 : listArg0, args[0]);
+            List<String> list = new ArrayList<>();
+            if (sender.hasPermission("sweet.chat.mode")) {
+                list.add("mode");
+            }
+            if (sender.isOp()) {
+                list.add("sudo");
+                list.add("reload");
+            }
+            return startsWith(list, args[0]);
         }
         if (args.length == 2) {
             if ("sudo".equalsIgnoreCase(args[0]) && sender.isOp()) {
+                return null;
+            }
+            if ("mode".equalsIgnoreCase(args[0]) && sender.hasPermission("sweet.chat.mode")) {
+                List<String> list = new ArrayList<>();
+                for (String str : ChatListener.inst().getChatModeKeys()) {
+                    if (sender.hasPermission("sweet.chat.mode.set." + str)) {
+                        list.add(str);
+                    }
+                }
+                return startsWith(list, args[1]);
+            }
+        }
+        if (args.length == 3) {
+            if ("mode".equalsIgnoreCase(args[0]) && sender.hasPermission("sweet.chat.mode.others")) {
                 return null;
             }
         }

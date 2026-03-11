@@ -191,6 +191,11 @@ public class ChatListener extends AbstractModule implements Listener {
         return chatModeDefault;
     }
 
+    @NotNull
+    public Set<String> getChatModeKeys() {
+        return chatModeRegistry.keySet();
+    }
+
     @Nullable
     public IChatMode getChatMode(String str) {
         return chatModeRegistry.get(str);
