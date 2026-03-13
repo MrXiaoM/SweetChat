@@ -27,11 +27,11 @@ public class ModeDatabase extends AbstractPluginHolder implements IDatabase, Lis
 
     @Override
     public void reload(Connection conn, String tablePrefix) throws SQLException {
-        TABLE_NAME = tablePrefix + "mode";
+        TABLE_NAME = tablePrefix + "player_mode";
         try (PreparedStatement ps = conn.prepareStatement(
                 "CREATE TABLE if NOT EXISTS `" + TABLE_NAME + "`(" +
                         "`uuid` VARCHAR(64) PRIMARY KEY," +
-                        "`mode` INT" +
+                        "`mode` VARCHAR(100)" +
                 ");"
         )) {
             ps.execute();
