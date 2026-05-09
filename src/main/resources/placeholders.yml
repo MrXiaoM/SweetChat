@@ -1,0 +1,35 @@
+
+# 条件变量
+# 插件外 PAPI 用法: %sweetchat_condition_名称%
+# 插件内变量用法: ${cond:名称}
+conditional-placeholders:
+  # 第一种示例: 当 input 匹配 match 的值时，输出 output
+  example_when_match:
+    enable: false
+    input: '%player_world%'
+    # 输入匹配时返回 output 对应值
+    when:
+      - match: 'world'
+        output: '主世界'
+      - match: 'world_nether'
+        output: '地狱'
+      - match: 'world_the_end'
+        output: '末地'
+    # 均不匹配时，返回对应值
+    else: '${self}'
+  # 第二种示例: 按 eval 的表达式是否成立来决定输出结果
+  example_eval:
+    enable: false
+    # 临时变量列表，提前解析 PAPI 变量，放到 ${var.名称} 中
+    # 以免多个表达式重复解析 PAPI 变量
+    variables:
+      is_op: '%player_is_op%'
+    # 表达式列表，按顺序进行判定，判定通过则返回 output 对应值
+    # 表达式文档详见:
+    # https://ezylang.github.io/EvalEx/references/references.html
+    # 如果表达式解析错误，将会在控制台输出报错，并且使得判定不通过
+    statements:
+      - eval: '"${var.is_op}" == "yes"'
+        output: '管理员'
+    # 所有表达式均不匹配时输出的值
+    default: ''

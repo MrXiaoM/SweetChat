@@ -5,8 +5,11 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import top.mrxiaom.pluginbase.utils.ListPair;
+import top.mrxiaom.pluginbase.utils.Pair;
 import top.mrxiaom.pluginbase.utils.depend.PAPI;
 import top.mrxiaom.sweet.chat.SweetChat;
+import top.mrxiaom.sweet.chat.func.PlaceholdersManager;
 
 import java.util.HashMap;
 import java.util.List;
@@ -20,12 +23,14 @@ public class ChatContext {
     private final SweetChat plugin;
     private final Player player;
     private final Map<String, Object> tags = new HashMap<>();
+    private final ListPair<String, Object> replacements = new ListPair<>();
     private String text;
     @ApiStatus.Internal
     public ChatContext(SweetChat plugin, Player player, String text) {
         this.plugin = plugin;
         this.player = player;
         this.text = text;
+        PlaceholdersManager.inst().addReplacements(player, replacements);
     }
 
     /**
@@ -72,12 +77,19 @@ public class ChatContext {
 
     @NotNull
     public String setPlaceholders(@NotNull String str) {
-        return PAPI.setPlaceholders(player, str);
+        return PAPI.setPlaceholders(player, Pair.replace(str, replacements));
     }
 
     @NotNull
     public List<String> setPlaceholders(@NotNull List<String> list) {
-        return PAPI.setPlaceholders(player, list);
+        return PAPI.setPlaceholders(player, Pair.replace(list, replacements));
+    }
+
+    /**
+     * 获取额外变量列表
+     */
+    public ListPair<String, Object> replacements() {
+        return replacements;
     }
 
     /**
