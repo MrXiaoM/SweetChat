@@ -1,7 +1,6 @@
 package top.mrxiaom.sweet.chat.utils;
 
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Bukkit;
@@ -9,16 +8,15 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import top.mrxiaom.pluginbase.BukkitPlugin;
+import top.mrxiaom.pluginbase.utils.AdventureUtil;
 import top.mrxiaom.sweet.chat.depend.PacketEventsSupport;
 import top.mrxiaom.sweet.chat.func.AbstractPluginHolder;
 
 import java.util.List;
 
 public class ComponentUtils {
-    private static BukkitAudiences adventure;
     private static boolean supportPacketEvents;
     public static void init(JavaPlugin plugin) {
-        adventure = BukkitAudiences.builder(plugin).build();
     }
 
     public static void afterEnable() {
@@ -45,7 +43,7 @@ public class ComponentUtils {
             PacketEventsSupport.inst().send((Player) sender, component);
             return;
         }
-        adventure.sender(sender).sendMessage(component);
+        AdventureUtil.sendMessage(sender, component);
     }
 
     /**
