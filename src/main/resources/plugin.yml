@@ -10,8 +10,7 @@ softdepend:
   - TAB
 authors: [ MrXiaoM ]
 folia-supported: true
-libraries:
-  - "org.jetbrains:annotations:24.0.0"
+# PluginBase Libraries ${libraries_config}
 commands:
   sweetchat:
     description: 'The main command of SweetChat'
