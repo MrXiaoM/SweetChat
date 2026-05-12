@@ -1,4 +1,5 @@
 import top.mrxiaom.gradle.LibraryHelper
+import java.util.Locale
 
 plugins {
     java
@@ -20,6 +21,9 @@ val pluginBaseModules = base.modules.run { listOf(library, paper, actions, l10n,
 val shadowGroup = "top.mrxiaom.sweet.chat.libs"
 
 repositories {
+    if (Locale.getDefault().country == "CN") {
+        maven("https://mirrors.huaweicloud.com/repository/maven/")
+    }
     mavenCentral()
     maven("https://repo.codemc.io/repository/maven-public/")
     maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
@@ -34,8 +38,8 @@ dependencies {
 
     compileOnly("com.github.MascusJeoraly:LanguageUtils:1.9")
     compileOnly("com.github.retrooper:packetevents-spigot:2.12.1")
-    compileOnly("me.clip:placeholderapi:2.11.6")
-    compileOnly("com.github.NEZNAMY:TAB-API:4.1.8")
+    compileOnly("me.clip:placeholderapi:2.12.2")
+    compileOnly("com.github.NEZNAMY:TAB-API:6.0.0")
 
     base.library(LibraryHelper.adventure("4.22.0"))
     base.library(base.depend.HikariCP)
