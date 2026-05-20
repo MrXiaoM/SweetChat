@@ -29,7 +29,6 @@ import top.mrxiaom.sweet.chat.utils.Utils;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @AutoRegister
@@ -122,17 +121,12 @@ public class CommandMain extends AbstractModule implements CommandExecutor, TabC
             LocalDateTime endTime;
             String durationStr;
             String endTimeStr;
-            if (input.equals("inf")) {
+            if (input.equals("inf") || input.equals("infinite")) {
                 endTime = null;
                 durationStr = null;
                 endTimeStr = null;
             } else {
-                LocalDateTime parsed;
-                try {
-                    parsed = LocalDateTime.parse(input, endTimeFormat);
-                } catch (Exception ex) {
-                    parsed = null;
-                }
+                LocalDateTime parsed = Utils.parseDateTime(input);
                 if (parsed != null) {
                     endTime = parsed;
                     Duration duration = Utils.between(LocalDateTime.now(), endTime);
@@ -231,9 +225,8 @@ public class CommandMain extends AbstractModule implements CommandExecutor, TabC
         }
     }
 
-    private static final DateTimeFormatter endTimeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private static final List<String> muteDurationSample = Lists.newArrayList(
-            "inf", "30m", "60s", "yyyy-MM-dd HH:mm:ss"
+            "inf", "30m", "60s", "yyyy-MM-dd HH:mm:ss", "HH:mm"
     );
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String alias, @NotNull String[] args) {
