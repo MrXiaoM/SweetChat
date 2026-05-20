@@ -12,7 +12,6 @@ import top.mrxiaom.sweet.chat.database.data.Mute;
 import top.mrxiaom.sweet.chat.func.AbstractPluginHolder;
 import top.mrxiaom.sweet.chat.func.ChatListener;
 import top.mrxiaom.sweet.chat.func.PlaceholdersManager;
-import top.mrxiaom.sweet.chat.utils.Utils;
 
 import java.time.LocalDateTime;
 
@@ -71,7 +70,7 @@ public class Placeholders extends PlaceholdersExpansion<SweetChat> {
             LocalDateTime endTime = mute.endTime();
             LocalDateTime now = LocalDateTime.now();
             if (endTime == null || now.isAfter(endTime)) return "";
-            Duration duration = Utils.between(now, endTime);
+            Duration duration = Duration.between(now, endTime);
             return database.formatDuration(duration);
         }
         if (params.equals("mute_status")) {
@@ -82,7 +81,7 @@ public class Placeholders extends PlaceholdersExpansion<SweetChat> {
                 case MUTED_TIMED:
                     LocalDateTime now = LocalDateTime.now();
                     if (endTime != null && now.isBefore(endTime)) {
-                        Duration duration = Utils.between(now, endTime);
+                        Duration duration = Duration.between(now, endTime);
                         return muteTimed.replace("%duration%", database.formatDuration(duration));
                     } else {
                         mute.setNotMuted().submit();

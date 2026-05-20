@@ -30,7 +30,6 @@ import top.mrxiaom.sweet.chat.impl.format.PartPlayerMessage;
 import top.mrxiaom.sweet.chat.impl.mode.GlobalMode;
 import top.mrxiaom.sweet.chat.impl.mode.LocalMode;
 import top.mrxiaom.sweet.chat.utils.ComponentUtils;
-import top.mrxiaom.sweet.chat.utils.Utils;
 
 import java.io.File;
 import java.time.LocalDateTime;
@@ -187,7 +186,7 @@ public class ChatListener extends AbstractModule implements Listener {
             case MUTED_TIMED: {
                 LocalDateTime now = LocalDateTime.now();
                 if (endTime != null && now.isBefore(endTime)) {
-                    Duration duration = Utils.between(now, endTime);
+                    Duration duration = Duration.between(now, endTime);
                     String durationStr = database.formatDuration(duration);
                     String endTimeStr = database.formatEndTime(endTime);
                     return Messages.Chat.muted__timed.tm(player,

@@ -129,7 +129,7 @@ public class CommandMain extends AbstractModule implements CommandExecutor, TabC
                 LocalDateTime parsed = Utils.parseDateTime(input);
                 if (parsed != null) {
                     endTime = parsed;
-                    Duration duration = Utils.between(LocalDateTime.now(), endTime);
+                    Duration duration = Duration.between(LocalDateTime.now(), endTime);
                     durationStr = database.formatDuration(duration);
                     endTimeStr = database.formatEndTime(endTime);
                 } else {
