@@ -107,7 +107,11 @@ public class MuteDatabase extends AbstractPluginHolder implements IDatabase, Lis
 
     @EventHandler
     public void onQuit(PlayerQuitEvent e) {
-        cacheMap.remove(e.getPlayer().getUniqueId());
+        removeCache(e.getPlayer().getUniqueId());
+    }
+
+    public void removeCache(UUID player) {
+        cacheMap.remove(player);
     }
 
     @NotNull

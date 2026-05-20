@@ -12,6 +12,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import top.mrxiaom.pluginbase.data.Duration;
 import top.mrxiaom.pluginbase.func.AutoRegister;
+import top.mrxiaom.pluginbase.func.language.Message;
+import top.mrxiaom.pluginbase.utils.AdventureUtil;
+import top.mrxiaom.pluginbase.utils.Bytes;
 import top.mrxiaom.pluginbase.utils.Pair;
 import top.mrxiaom.pluginbase.utils.Util;
 import top.mrxiaom.sweet.chat.Messages;
@@ -23,6 +26,8 @@ import top.mrxiaom.sweet.chat.func.AbstractModule;
 import top.mrxiaom.sweet.chat.func.ChatListener;
 import top.mrxiaom.sweet.chat.utils.Utils;
 
+import java.io.DataInputStream;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -32,6 +37,37 @@ public class CommandMain extends AbstractModule implements CommandExecutor, TabC
     public CommandMain(SweetChat plugin) {
         super(plugin);
         registerCommand("sweetchat", this);
+        registerBungee();
+    }
+
+    @Override
+    public void receiveBungee(String subChannel, DataInputStream in) throws IOException {
+        if (subChannel.equals("SweetChatRefreshCache")) {
+            if (System.currentTimeMillis() > in.readLong()) return;
+            long mostSigBits = in.readLong();
+            long leastSigBits = in.readLong();
+            UUID playerId = new UUID(mostSigBits, leastSigBits);
+            plugin.getMuteDatabase().removeCache(playerId);
+            String message = in.readUTF();
+            if (message.isEmpty()) return;
+            Player player = Util.getOnlinePlayer(playerId).orElse(null);
+            if (player != null && player.isOnline()) {
+                AdventureUtil.sendMessage(player, message);
+            }
+        }
+    }
+
+    private void requireRefreshCache(OfflinePlayer player, String message) {
+        requireRefreshCache(player.getUniqueId(), message);
+    }
+
+    private void requireRefreshCache(UUID playerId, String message) {
+        Bytes.sendByWhoeverOrNot("BungeeCord", Bytes.build(out -> {
+            out.writeLong(System.currentTimeMillis() + 3000L);
+            out.writeLong(playerId.getMostSignificantBits());
+            out.writeLong(playerId.getLeastSignificantBits());
+            out.writeUTF(message);
+        }, "Forward", "ALL", "SweetChatRefreshCache"));
     }
 
     @Override
@@ -117,22 +153,25 @@ public class CommandMain extends AbstractModule implements CommandExecutor, TabC
             if (endTime == null) {
                 mute.setInfiniteMuted().submit();
                 Player p = player.getPlayer();
+                Message msg = Messages.Commands.mute__success__infinite_notice;
                 if (p != null && p.isOnline()) {
-                    Messages.Commands.mute__success__infinite_notice.tm(p);
+                    msg.tm(p);
                 } else {
-                    // TODO: 跨服提醒被禁言用户，自己被永久禁言
+                    requireRefreshCache(player, msg.str());
                 }
                 return Messages.Commands.mute__success__infinite.tm(sender,
                         Pair.of("%player%", player.getName()));
             } else {
                 mute.setTimedMuted(endTime).submit();
                 Player p = player.getPlayer();
+                Message msg = Messages.Commands.mute__success__timed_notice;
                 if (p != null && p.isOnline()) {
-                    Messages.Commands.mute__success__timed_notice.tm(p,
-                            Pair.of("%duration%", durationStr),
+                    msg.tm(p, Pair.of("%duration%", durationStr),
                             Pair.of("%end_time%", endTimeStr));
                 } else {
-                    // TODO: 跨服提醒被禁言用户，自己被禁言多长时间
+                    requireRefreshCache(player, msg.str(
+                            Pair.of("%duration%", durationStr),
+                            Pair.of("%end_time%", endTimeStr)));
                 }
                 return Messages.Commands.mute__success__timed.tm(sender,
                         Pair.of("%player%", player.getName()),
@@ -152,10 +191,11 @@ public class CommandMain extends AbstractModule implements CommandExecutor, TabC
             }
             mute.setNotMuted().submit();
             Player p = player.getPlayer();
+            Message msg = Messages.Commands.unmute__success_notice;
             if (p != null && p.isOnline()) {
-                Messages.Commands.unmute__success_notice.tm(p);
+                msg.tm(p);
             } else {
-                // TODO: 跨服提醒被禁言用户，已解除禁言
+                requireRefreshCache(player, msg.str());
             }
             return Messages.Commands.unmute__success.tm(sender,
                     Pair.of("player", player.getName()));
