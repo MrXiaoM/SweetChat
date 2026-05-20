@@ -56,7 +56,8 @@ public class Placeholders extends PlaceholdersExpansion<SweetChat> {
             LocalDateTime endTime = mute.endTime();
             switch (mute.mode()) {
                 case MUTED_TIMED:
-                    if (endTime != null && LocalDateTime.now().isBefore(endTime)) {
+                    LocalDateTime now = LocalDateTime.now();
+                    if (endTime != null && now.isBefore(endTime)) {
                         long seconds = endTime.toEpochSecond(ZoneOffset.UTC) - now.toEpochSecond(ZoneOffset.UTC);
                         // TODO: 返回剩余禁言时间
                         return "";
