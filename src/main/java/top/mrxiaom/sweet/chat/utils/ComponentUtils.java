@@ -31,7 +31,7 @@ public class ComponentUtils {
             plugin.info("使用 PacketEvents 消息发送方案");
             return;
         }
-        plugin.info("使用 Adventure Bukkit Platform 消息发送方案");
+        plugin.info("使用 PluginBase 消息发送方案");
     }
 
     public static void send(CommandSender sender, Component component) {
