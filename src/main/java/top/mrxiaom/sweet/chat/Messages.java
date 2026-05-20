@@ -42,6 +42,8 @@ public class Messages {
                 "&b&lSweetChat 帮助命令",
                 "&f/chat mode <模式/clear> [玩家] &e设置玩家的默认聊天模式",
                 "&f/chat sudo <玩家> […消息内容] &e以某个在线玩家的身份发送消息",
+                "&f/chat mute <玩家> [时长] &e禁言某个玩家",
+                "&f/chat unmute <玩家> &e解除某个玩家的禁言",
                 "&f/chat reload &e重载插件配置文件",
                 "&f/chat reload database &e重载并重新连接数据库"
         );
