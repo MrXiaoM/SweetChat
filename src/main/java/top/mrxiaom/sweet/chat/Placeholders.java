@@ -1,20 +1,39 @@
 package top.mrxiaom.sweet.chat;
 
+import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import top.mrxiaom.pluginbase.data.Duration;
 import top.mrxiaom.pluginbase.utils.depend.PlaceholdersExpansion;
 import top.mrxiaom.sweet.chat.api.IConditionalPlaceholder;
+import top.mrxiaom.sweet.chat.database.MuteDatabase;
 import top.mrxiaom.sweet.chat.database.data.Mute;
+import top.mrxiaom.sweet.chat.func.AbstractPluginHolder;
 import top.mrxiaom.sweet.chat.func.ChatListener;
 import top.mrxiaom.sweet.chat.func.PlaceholdersManager;
+import top.mrxiaom.sweet.chat.utils.Utils;
 
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 
 public class Placeholders extends PlaceholdersExpansion<SweetChat> {
+    private String muteTimed, muteInfinite, muteNot;
     public Placeholders(SweetChat plugin) {
         super(plugin);
+        new ReloadListener(plugin);
+    }
+
+    public class ReloadListener extends AbstractPluginHolder {
+        private ReloadListener(SweetChat plugin) {
+            super(plugin, true);
+        }
+
+        @Override
+        public void reloadConfig(MemoryConfiguration config) {
+            muteTimed = config.getString("mute.placeholders.muted-timed", "禁言中 %duration%");
+            muteInfinite = config.getString("mute.placeholders.muted-timed", "永久禁言中");
+            muteNot = config.getString("mute.placeholders.not-muted", "未禁言");
+        }
     }
 
     @Override
@@ -40,36 +59,39 @@ public class Placeholders extends PlaceholdersExpansion<SweetChat> {
             return bool(mute.isMuted());
         }
         if (params.equals("mute_end_time")) {
-            Mute mute = plugin.getMuteDatabase().getMute(player.getUniqueId());
+            MuteDatabase database = plugin.getMuteDatabase();
+            Mute mute = database.getMute(player.getUniqueId());
             LocalDateTime endTime = mute.endTime();
             if (endTime == null) return "";
-            // TODO: 返回结束时间
+            return database.formatEndTime(endTime);
         }
         if (params.equals("mute_remain_duration")) {
-            Mute mute = plugin.getMuteDatabase().getMute(player.getUniqueId());
+            MuteDatabase database = plugin.getMuteDatabase();
+            Mute mute = database.getMute(player.getUniqueId());
             LocalDateTime endTime = mute.endTime();
-            if (endTime == null) return "";
-            // TODO: 返回剩余时间
+            LocalDateTime now = LocalDateTime.now();
+            if (endTime == null || now.isAfter(endTime)) return "";
+            Duration duration = Utils.between(now, endTime);
+            return database.formatDuration(duration);
         }
         if (params.equals("mute_status")) {
-            Mute mute = plugin.getMuteDatabase().getMute(player.getUniqueId());
+            MuteDatabase database = plugin.getMuteDatabase();
+            Mute mute = database.getMute(player.getUniqueId());
             LocalDateTime endTime = mute.endTime();
             switch (mute.mode()) {
                 case MUTED_TIMED:
                     LocalDateTime now = LocalDateTime.now();
                     if (endTime != null && now.isBefore(endTime)) {
-                        long seconds = endTime.toEpochSecond(ZoneOffset.UTC) - now.toEpochSecond(ZoneOffset.UTC);
-                        // TODO: 返回剩余禁言时间
-                        return "";
+                        Duration duration = Utils.between(now, endTime);
+                        return muteTimed.replace("%duration%", database.formatDuration(duration));
                     } else {
                         mute.setNotMuted().submit();
                     }
                     break;
                 case MUTED_INFINITE:
-                    // TODO: 返回永久禁言提示
-                    return "";
+                    return muteInfinite;
             }
-            // TODO: 返回未禁言
+            return muteNot;
         }
         return super.onPlaceholderRequest(player, params);
     }

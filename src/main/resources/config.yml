@@ -44,6 +44,24 @@ chat-mode:
     formats:
       - 'local/*'
 
+mute:
+  time-format:
+    duration:
+      delimiter: ''
+      days: 天
+      day: 天
+      hours: 时
+      hour: 时
+      minutes: 分
+      minute: 分
+      seconds: 秒
+      second: 秒
+    end-time: 'yyyy-MM-dd HH:mm:ss'
+  placeholders:
+    muted-timed: '禁言中 %duration%'
+    muted-infinite: '永久禁言中'
+    not-muted: '未禁言'
+
 # 跨服广播设置
 cross-server:
   # 消息广播模式

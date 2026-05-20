@@ -15,26 +15,25 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import top.mrxiaom.pluginbase.actions.ActionProviders;
 import top.mrxiaom.pluginbase.api.IAction;
+import top.mrxiaom.pluginbase.data.Duration;
 import top.mrxiaom.pluginbase.func.AutoRegister;
-import top.mrxiaom.pluginbase.utils.CollectionUtils;
-import top.mrxiaom.pluginbase.utils.ConfigUtils;
-import top.mrxiaom.pluginbase.utils.ListPair;
-import top.mrxiaom.pluginbase.utils.Util;
+import top.mrxiaom.pluginbase.utils.*;
 import top.mrxiaom.sweet.chat.Messages;
 import top.mrxiaom.sweet.chat.SweetChat;
 import top.mrxiaom.sweet.chat.api.*;
 import top.mrxiaom.sweet.chat.config.formats.ChatFormat;
 import top.mrxiaom.sweet.chat.config.replacements.AtConfig;
+import top.mrxiaom.sweet.chat.database.MuteDatabase;
 import top.mrxiaom.sweet.chat.database.data.Mute;
 import top.mrxiaom.sweet.chat.impl.format.PartPlain;
 import top.mrxiaom.sweet.chat.impl.format.PartPlayerMessage;
 import top.mrxiaom.sweet.chat.impl.mode.GlobalMode;
 import top.mrxiaom.sweet.chat.impl.mode.LocalMode;
 import top.mrxiaom.sweet.chat.utils.ComponentUtils;
+import top.mrxiaom.sweet.chat.utils.Utils;
 
 import java.io.File;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -181,23 +180,26 @@ public class ChatListener extends AbstractModule implements Listener {
     }
 
     public boolean onChat(Player player, String text) {
-        Mute mute = plugin.getMuteDatabase().getMute(player.getUniqueId());
+        MuteDatabase database = plugin.getMuteDatabase();
+        Mute mute = database.getMute(player.getUniqueId());
         LocalDateTime endTime = mute.endTime();
         switch (mute.mode()) {
             case MUTED_TIMED: {
                 LocalDateTime now = LocalDateTime.now();
                 if (endTime != null && now.isBefore(endTime)) {
-                    long seconds = endTime.toEpochSecond(ZoneOffset.UTC) - now.toEpochSecond(ZoneOffset.UTC);
-                    // TODO: 提示用户剩余禁言时间
-                    return true;
+                    Duration duration = Utils.between(now, endTime);
+                    String durationStr = database.formatDuration(duration);
+                    String endTimeStr = database.formatEndTime(endTime);
+                    return Messages.Chat.muted__timed.tm(player,
+                            Pair.of("%duration%", durationStr),
+                            Pair.of("%end_time%", endTimeStr));
                 } else {
                     mute.setNotMuted().submit();
                 }
                 break;
             }
             case MUTED_INFINITE: {
-                // TODO: 提示用户正在被永久禁言
-                return true;
+                return Messages.Chat.muted__infinite.tm(player);
             }
             default:
                 break;

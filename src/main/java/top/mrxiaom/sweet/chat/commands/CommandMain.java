@@ -16,16 +16,15 @@ import top.mrxiaom.pluginbase.utils.Pair;
 import top.mrxiaom.pluginbase.utils.Util;
 import top.mrxiaom.sweet.chat.Messages;
 import top.mrxiaom.sweet.chat.SweetChat;
-import top.mrxiaom.sweet.chat.api.EnumMuteMode;
 import top.mrxiaom.sweet.chat.api.IChatMode;
 import top.mrxiaom.sweet.chat.database.MuteDatabase;
 import top.mrxiaom.sweet.chat.database.data.Mute;
 import top.mrxiaom.sweet.chat.func.AbstractModule;
 import top.mrxiaom.sweet.chat.func.ChatListener;
+import top.mrxiaom.sweet.chat.utils.Utils;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.*;
 
 @AutoRegister
@@ -78,43 +77,68 @@ public class CommandMain extends AbstractModule implements CommandExecutor, TabC
             if (player == null) {
                 return Messages.player__not_exists.tm(sender);
             }
+            MuteDatabase database = plugin.getMuteDatabase();
             StringJoiner joiner = new StringJoiner(" ");
             for (int i = 2; i < args.length; i++) {
                 joiner.add(args[i]);
             }
             String input = joiner.toString();
             LocalDateTime endTime;
+            String durationStr;
+            String endTimeStr;
             if (input.equals("inf")) {
                 endTime = null;
+                durationStr = null;
+                endTimeStr = null;
             } else {
                 LocalDateTime parsed;
                 try {
                     parsed = LocalDateTime.parse(input, endTimeFormat);
-                } catch (DateTimeParseException ex) {
+                } catch (Exception ex) {
                     parsed = null;
                 }
                 if (parsed != null) {
                     endTime = parsed;
+                    Duration duration = Utils.between(LocalDateTime.now(), endTime);
+                    durationStr = database.formatDuration(duration);
+                    endTimeStr = database.formatEndTime(endTime);
                 } else {
                     Duration duration = Duration.parse(input).orElse(null);
                     if (duration != null) {
                         endTime = duration.addFrom(LocalDateTime.now());
+                        durationStr = database.formatDuration(duration);
+                        endTimeStr = database.formatEndTime(endTime);
                     } else {
-                        // TODO: 提示时间格式无效
-                        return true;
+                        return Messages.Commands.mute__duration_invalid.tm(sender);
                     }
                 }
             }
-            MuteDatabase database = plugin.getMuteDatabase();
             Mute mute = database.getMute(player.getUniqueId());
             if (endTime == null) {
-                mute.setInfiniteMuted();
+                mute.setInfiniteMuted().submit();
+                Player p = player.getPlayer();
+                if (p != null && p.isOnline()) {
+                    Messages.Commands.mute__success__infinite_notice.tm(p);
+                } else {
+                    // TODO: 跨服提醒被禁言用户，自己被永久禁言
+                }
+                return Messages.Commands.mute__success__infinite.tm(sender,
+                        Pair.of("%player%", player.getName()));
             } else {
-                mute.setTimedMuted(endTime);
+                mute.setTimedMuted(endTime).submit();
+                Player p = player.getPlayer();
+                if (p != null && p.isOnline()) {
+                    Messages.Commands.mute__success__timed_notice.tm(p,
+                            Pair.of("%duration%", durationStr),
+                            Pair.of("%end_time%", endTimeStr));
+                } else {
+                    // TODO: 跨服提醒被禁言用户，自己被禁言多长时间
+                }
+                return Messages.Commands.mute__success__timed.tm(sender,
+                        Pair.of("%player%", player.getName()),
+                        Pair.of("%duration%", durationStr),
+                        Pair.of("%end_time%", endTimeStr));
             }
-            mute.submit();
-            // TODO: 提醒禁言
-            return true;
         }
         if (args.length >= 2 && "unmute".equalsIgnoreCase(args[0]) && sender.hasPermission("sweet.chat.unmute")) {
             OfflinePlayer player = Util.getOfflinePlayer(args[1]).orElse(null);
@@ -124,12 +148,17 @@ public class CommandMain extends AbstractModule implements CommandExecutor, TabC
             MuteDatabase database = plugin.getMuteDatabase();
             Mute mute = database.getMute(player.getUniqueId());
             if (!mute.isMuted()) {
-                // TODO: 提醒无需解除禁言
-                return true;
+                return Messages.Commands.unmute__unnecessary.tm(sender);
             }
             mute.setNotMuted().submit();
-            // TODO: 提醒解除禁言
-            return true;
+            Player p = player.getPlayer();
+            if (p != null && p.isOnline()) {
+                Messages.Commands.unmute__success_notice.tm(p);
+            } else {
+                // TODO: 跨服提醒被禁言用户，已解除禁言
+            }
+            return Messages.Commands.unmute__success.tm(sender,
+                    Pair.of("player", player.getName()));
         }
         if (args.length > 1 && "sudo".equalsIgnoreCase(args[0]) && sender.hasPermission("sweet.chat.sudo")) {
             Player player = Util.getOnlinePlayer(args[1]).orElse(null);

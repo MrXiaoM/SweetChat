@@ -1,11 +1,13 @@
 package top.mrxiaom.sweet.chat.database;
 
+import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import top.mrxiaom.pluginbase.data.Duration;
 import top.mrxiaom.pluginbase.database.IDatabase;
 import top.mrxiaom.pluginbase.utils.CollectionUtils;
 import top.mrxiaom.sweet.chat.SweetChat;
@@ -21,12 +23,19 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.StringJoiner;
 import java.util.UUID;
 
 public class MuteDatabase extends AbstractPluginHolder implements IDatabase, Listener {
     private static final DateTimeFormatter DATETIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private String TABLE_NAME;
     private final Map<UUID, Mute> cacheMap = new HashMap<>();
+    private String durationDelimiter;
+    private String durationDays, durationDay;
+    private String durationHours, durationHour;
+    private String durationMinutes, durationMinute;
+    private String durationSeconds, durationSecond;
+    private DateTimeFormatter endTimeFormat;
     public MuteDatabase(SweetChat plugin) {
         super(plugin, true);
         registerEvents();
@@ -44,6 +53,47 @@ public class MuteDatabase extends AbstractPluginHolder implements IDatabase, Lis
         )) {
             ps.execute();
         }
+    }
+
+    @Override
+    public void reloadConfig(MemoryConfiguration config) {
+        this.durationDelimiter = config.getString("mute.time-format.duration.delimiter", "");
+        this.durationDays = config.getString("mute.time-format.duration.days", "");
+        this.durationDay = config.getString("mute.time-format.duration.day", "");
+        this.durationHours = config.getString("mute.time-format.duration.hours", "");
+        this.durationHour = config.getString("mute.time-format.duration.hour", "");
+        this.durationMinutes = config.getString("mute.time-format.duration.minutes", "");
+        this.durationMinute = config.getString("mute.time-format.duration.minute", "");
+        this.durationSeconds = config.getString("mute.time-format.duration.seconds", "");
+        this.durationSecond = config.getString("mute.time-format.duration.second", "");
+        try {
+            this.endTimeFormat = DateTimeFormatter.ofPattern(config.getString("mute.time-format.end-time", "yyyy-MM-dd HH:mm:ss"));
+        } catch (Exception e) {
+            this.endTimeFormat = DateTimeFormatter.ISO_DATE_TIME;
+        }
+    }
+
+    public String formatEndTime(LocalDateTime endTime) {
+        return endTime.format(endTimeFormat);
+    }
+
+    public String formatDuration(Duration duration) {
+        StringJoiner joiner = new StringJoiner(durationDelimiter);
+        if (duration.days() > 0) {
+            String unit = duration.days() > 1 ? durationDays : durationDay;
+            joiner.add(duration.days() + unit);
+        }
+        if (duration.hours() > 0) {
+            String unit = duration.hours() > 1 ? durationHours : durationHour;
+            joiner.add(duration.hours() + unit);
+        }
+        if (duration.minutes() > 0) {
+            String unit = duration.minutes() > 1 ? durationMinutes : durationMinute;
+            joiner.add(duration.minutes() + unit);
+        }
+        String secondUnit = duration.seconds() > 1 ? durationSeconds : durationSecond;
+        joiner.add(duration.seconds() + secondUnit);
+        return joiner.toString();
     }
 
     @EventHandler

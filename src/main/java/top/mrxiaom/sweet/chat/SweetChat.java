@@ -104,6 +104,7 @@ public class SweetChat extends BukkitPlugin {
                 .setLangFile("messages.yml")
                 .register(Messages.class)
                 .register(Messages.Commands.class)
+                .register(Messages.Chat.class)
                 .reload();
 
         options.registerDatabase(
