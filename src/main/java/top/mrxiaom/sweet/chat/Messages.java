@@ -9,6 +9,7 @@ import static top.mrxiaom.pluginbase.func.language.LanguageFieldAutoHolder.field
 public class Messages {
 
     public static final Message player__not_online = field("&e玩家 %player% 不在线 (或不存在)");
+    public static final Message player__not_exists = field("&e玩家 %player% 不存在");
     public static final Message player__only = field("该命令只能由玩家执行");
     public static final Message chat_exception = field("&e聊天消息发送失败，日志已输出到控制台，请联系服务器管理员");
 

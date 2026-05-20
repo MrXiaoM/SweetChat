@@ -1,6 +1,7 @@
 package top.mrxiaom.sweet.chat.commands;
 
 import com.google.common.collect.Lists;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -9,15 +10,22 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import top.mrxiaom.pluginbase.data.Duration;
 import top.mrxiaom.pluginbase.func.AutoRegister;
 import top.mrxiaom.pluginbase.utils.Pair;
 import top.mrxiaom.pluginbase.utils.Util;
 import top.mrxiaom.sweet.chat.Messages;
 import top.mrxiaom.sweet.chat.SweetChat;
+import top.mrxiaom.sweet.chat.api.EnumMuteMode;
 import top.mrxiaom.sweet.chat.api.IChatMode;
+import top.mrxiaom.sweet.chat.database.MuteDatabase;
+import top.mrxiaom.sweet.chat.database.data.Mute;
 import top.mrxiaom.sweet.chat.func.AbstractModule;
 import top.mrxiaom.sweet.chat.func.ChatListener;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 
 @AutoRegister
@@ -65,7 +73,65 @@ public class CommandMain extends AbstractModule implements CommandExecutor, TabC
             });
             return true;
         }
-        if (args.length > 1 && "sudo".equalsIgnoreCase(args[0]) && sender.isOp()) {
+        if (args.length >= 3 && "mute".equalsIgnoreCase(args[0]) && sender.hasPermission("sweet.chat.mute")) {
+            OfflinePlayer player = Util.getOfflinePlayer(args[1]).orElse(null);
+            if (player == null) {
+                return Messages.player__not_exists.tm(sender);
+            }
+            StringJoiner joiner = new StringJoiner(" ");
+            for (int i = 2; i < args.length; i++) {
+                joiner.add(args[i]);
+            }
+            String input = joiner.toString();
+            LocalDateTime endTime;
+            if (input.equals("inf")) {
+                endTime = null;
+            } else {
+                LocalDateTime parsed;
+                try {
+                    parsed = LocalDateTime.parse(input, endTimeFormat);
+                } catch (DateTimeParseException ex) {
+                    parsed = null;
+                }
+                if (parsed != null) {
+                    endTime = parsed;
+                } else {
+                    Duration duration = Duration.parse(input).orElse(null);
+                    if (duration != null) {
+                        endTime = duration.addFrom(LocalDateTime.now());
+                    } else {
+                        // TODO: 提示时间格式无效
+                        return true;
+                    }
+                }
+            }
+            MuteDatabase database = plugin.getMuteDatabase();
+            Mute mute = database.getMute(player.getUniqueId());
+            if (endTime == null) {
+                mute.setInfiniteMuted();
+            } else {
+                mute.setTimedMuted(endTime);
+            }
+            mute.submit();
+            // TODO: 提醒禁言
+            return true;
+        }
+        if (args.length >= 2 && "unmute".equalsIgnoreCase(args[0]) && sender.hasPermission("sweet.chat.unmute")) {
+            OfflinePlayer player = Util.getOfflinePlayer(args[1]).orElse(null);
+            if (player == null) {
+                return Messages.player__not_exists.tm(sender);
+            }
+            MuteDatabase database = plugin.getMuteDatabase();
+            Mute mute = database.getMute(player.getUniqueId());
+            if (!mute.isMuted()) {
+                // TODO: 提醒无需解除禁言
+                return true;
+            }
+            mute.setNotMuted().submit();
+            // TODO: 提醒解除禁言
+            return true;
+        }
+        if (args.length > 1 && "sudo".equalsIgnoreCase(args[0]) && sender.hasPermission("sweet.chat.sudo")) {
             Player player = Util.getOnlinePlayer(args[1]).orElse(null);
             if (player == null) {
                 return Messages.player__not_online.tm(sender);
@@ -78,7 +144,7 @@ public class CommandMain extends AbstractModule implements CommandExecutor, TabC
             plugin.getScheduler().runTaskAsync(() -> ChatListener.inst().onChat(player, text));
             return true;
         }
-        if (args.length >= 1 && "reload".equalsIgnoreCase(args[0]) && sender.isOp()) {
+        if (args.length >= 1 && "reload".equalsIgnoreCase(args[0]) && sender.hasPermission("sweet.chat.reload")) {
             if (args.length == 2 && "database".equalsIgnoreCase(args[1])) {
                 plugin.options.database().reloadConfig();
                 plugin.options.database().reconnect();
@@ -90,21 +156,35 @@ public class CommandMain extends AbstractModule implements CommandExecutor, TabC
         return (sender.isOp() ? Messages.Commands.help__admin : Messages.Commands.help__player).tm(sender);
     }
 
+    private void add(CommandSender sender, List<String> list, String s) {
+        if (sender.hasPermission("sweet.chat." + s)) {
+            list.add(s);
+        }
+    }
+
+    private static final DateTimeFormatter endTimeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final List<String> muteDurationSample = Lists.newArrayList(
+            "inf", "30m", "60s", "yyyy-MM-dd HH:mm:ss"
+    );
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String alias, @NotNull String[] args) {
         if (args.length == 1) {
             List<String> list = new ArrayList<>();
-            if (sender.hasPermission("sweet.chat.mode")) {
-                list.add("mode");
-            }
-            if (sender.isOp()) {
-                list.add("sudo");
-                list.add("reload");
-            }
+            add(sender, list, "mode");
+            add(sender, list, "mute");
+            add(sender, list, "unmute");
+            add(sender, list, "sudo");
+            add(sender, list, "reload");
             return startsWith(list, args[0]);
         }
         if (args.length == 2) {
-            if ("sudo".equalsIgnoreCase(args[0]) && sender.isOp()) {
+            if ("sudo".equalsIgnoreCase(args[0]) && sender.hasPermission("sweet.chat.sudo")) {
+                return null;
+            }
+            if ("mute".equalsIgnoreCase(args[0]) && sender.hasPermission("sweet.chat.mute")) {
+                return null;
+            }
+            if ("unmute".equalsIgnoreCase(args[0]) && sender.hasPermission("sweet.chat.unmute")) {
                 return null;
             }
             if ("mode".equalsIgnoreCase(args[0]) && sender.hasPermission("sweet.chat.mode")) {
@@ -120,6 +200,11 @@ public class CommandMain extends AbstractModule implements CommandExecutor, TabC
         if (args.length == 3) {
             if ("mode".equalsIgnoreCase(args[0]) && sender.hasPermission("sweet.chat.mode.others")) {
                 return null;
+            }
+        }
+        if (args.length >= 3) {
+            if ("mute".equalsIgnoreCase(args[0]) && sender.hasPermission("sweet.chat.mute")) {
+                return muteDurationSample;
             }
         }
         return Collections.emptyList();

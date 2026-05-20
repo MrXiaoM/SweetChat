@@ -25,6 +25,7 @@ import top.mrxiaom.sweet.chat.SweetChat;
 import top.mrxiaom.sweet.chat.api.*;
 import top.mrxiaom.sweet.chat.config.formats.ChatFormat;
 import top.mrxiaom.sweet.chat.config.replacements.AtConfig;
+import top.mrxiaom.sweet.chat.database.data.Mute;
 import top.mrxiaom.sweet.chat.impl.format.PartPlain;
 import top.mrxiaom.sweet.chat.impl.format.PartPlayerMessage;
 import top.mrxiaom.sweet.chat.impl.mode.GlobalMode;
@@ -32,6 +33,8 @@ import top.mrxiaom.sweet.chat.impl.mode.LocalMode;
 import top.mrxiaom.sweet.chat.utils.ComponentUtils;
 
 import java.io.File;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -178,6 +181,27 @@ public class ChatListener extends AbstractModule implements Listener {
     }
 
     public boolean onChat(Player player, String text) {
+        Mute mute = plugin.getMuteDatabase().getMute(player.getUniqueId());
+        LocalDateTime endTime = mute.endTime();
+        switch (mute.mode()) {
+            case MUTED_TIMED: {
+                LocalDateTime now = LocalDateTime.now();
+                if (endTime != null && now.isBefore(endTime)) {
+                    long seconds = endTime.toEpochSecond(ZoneOffset.UTC) - now.toEpochSecond(ZoneOffset.UTC);
+                    // TODO: 提示用户剩余禁言时间
+                    return true;
+                } else {
+                    mute.setNotMuted().submit();
+                }
+                break;
+            }
+            case MUTED_INFINITE: {
+                // TODO: 提示用户正在被永久禁言
+                return true;
+            }
+            default:
+                break;
+        }
         ChatContext ctx = new ChatContext(plugin, player, text);
         boolean success = getChatMode(ctx).chat(ctx);
         if (!success && cancelEventWhenNoFormat) {
