@@ -91,8 +91,10 @@ public class MuteDatabase extends AbstractPluginHolder implements IDatabase, Lis
             String unit = duration.minutes() > 1 ? durationMinutes : durationMinute;
             joiner.add(duration.minutes() + unit);
         }
-        String secondUnit = duration.seconds() > 1 ? durationSeconds : durationSecond;
-        joiner.add(duration.seconds() + secondUnit);
+        if (duration.seconds() > 0) {
+            String unit = duration.seconds() > 1 ? durationSeconds : durationSecond;
+            joiner.add(duration.seconds() + unit);
+        }
         return joiner.toString();
     }
 
