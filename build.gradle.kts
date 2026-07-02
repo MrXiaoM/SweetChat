@@ -30,10 +30,11 @@ repositories {
     maven("https://repo.helpch.at/releases/")
     maven("https://jitpack.io")
     maven("https://repo.rosewooddev.io/repository/public/")
+    maven("https://artifactory.papermc.io/artifactory/universe/")
 }
 
 dependencies {
-    compileOnly("org.spigotmc:spigot-api:1.20-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.20-R0.1-SNAPSHOT")
     compileOnly("org.jetbrains:annotations:24.0.0")
 
     compileOnly("com.github.MascusJeoraly:LanguageUtils:1.9")

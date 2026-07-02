@@ -1,11 +1,14 @@
 package top.mrxiaom.sweet.chat.func;
 
+import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
@@ -44,6 +47,7 @@ public class ChatListener extends AbstractModule implements Listener {
     private final Map<String, IFormatPartProvider> partRegistry = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     private final Map<String, IChatMode> chatModeRegistry = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     private final Map<String, ChatFormat> chatFormatMap = new HashMap<>();
+    private final boolean isPaperEvent = Util.isPresent("io.papermc.paper.event.player.AsyncChatEvent");
     private IChatMode chatModeDefault;
     private final Map<String, List<IChatMode>> chatModeSwitchPrefix = new HashMap<>();
     private boolean cancelEventWhenNoFormat;
@@ -57,6 +61,7 @@ public class ChatListener extends AbstractModule implements Listener {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public void reloadConfig(MemoryConfiguration config) {
         HandlerList.unregisterAll(this);
         File folder = plugin.resolve(config.getString("folder.chat", "./chat"));
@@ -68,25 +73,39 @@ public class ChatListener extends AbstractModule implements Listener {
         reloadChatFormat(folder);
         reloadChatMode(config);
         EventPriority priority = getPriority(config, "listener.priority", EventPriority.HIGHEST);
-        Bukkit.getPluginManager().registerEvent(AsyncPlayerChatEvent.class, this, priority, (listener, event) -> {
-            if (event instanceof AsyncPlayerChatEvent) {
-                AsyncPlayerChatEvent e = (AsyncPlayerChatEvent) event;
+
+        if (isPaperEvent) {
+            Bukkit.getPluginManager().registerEvent(AsyncChatEvent.class, this, priority, (listener, event) -> {
+                if (!(event instanceof AsyncChatEvent)) return;
+                AsyncChatEvent e = (AsyncChatEvent) event;
                 if (e.isCancelled()) return;
                 Player player = e.getPlayer();
-                String message = e.getMessage();
-                try {
-                    if (onChat(player, message)) {
-                        e.setCancelled(true);
-                        e.setFormat("");
-                    }
-                } catch (Throwable t) {
-                    warn("玩家 " + player.getName() + " 发送聊天消息 '" + message + "' 时出现异常", t);
-                    Messages.chat_exception.tm(player);
-                    e.setCancelled(true);
+                String message = LegacyComponentSerializer.legacySection().serialize(e.message());
+                processChatEvent(player, message, e);
+            }, plugin, true);
+        } else {
+            Bukkit.getPluginManager().registerEvent(AsyncPlayerChatEvent.class, this, priority, (listener, event) -> {
+                if (!(event instanceof AsyncPlayerChatEvent)) return;
+                AsyncPlayerChatEvent e = (AsyncPlayerChatEvent) event;
+                if (e.isCancelled()) return;
+                processChatEvent(e.getPlayer(), e.getMessage(), e);
+                if (e.isCancelled()) {
                     e.setFormat("");
                 }
+            }, plugin, true);
+        }
+    }
+
+    private void processChatEvent(Player player, String message, Cancellable e) {
+        try {
+            if (onChat(player, message)) {
+                e.setCancelled(true);
             }
-        }, plugin, true);
+        } catch (Throwable t) {
+            warn("玩家 " + player.getName() + " 发送聊天消息 '" + message + "' 时出现异常", t);
+            Messages.chat_exception.tm(player);
+            e.setCancelled(true);
+        }
     }
 
     private void reloadChatFormat(File folder) {

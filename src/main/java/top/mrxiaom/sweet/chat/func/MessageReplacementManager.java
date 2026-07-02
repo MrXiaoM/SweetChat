@@ -334,6 +334,7 @@ public class MessageReplacementManager extends AbstractModule implements PluginM
         }
     }
 
+    @SuppressWarnings("removal")
     private Component getVanillaName(@NotNull ItemStack item, @Nullable Player player) {
         String itemName;
         if (supportTranslatable) {
