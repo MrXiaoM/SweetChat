@@ -37,6 +37,7 @@ import top.mrxiaom.sweet.chat.utils.ComponentUtils;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
@@ -60,8 +61,42 @@ public class ChatListener extends AbstractModule implements Listener {
         registerChatMode("local", new LocalMode(this));
     }
 
+    private enum ChatEventImpl {
+        @SuppressWarnings("deprecation")
+        BUKKIT((listener, priority) -> {
+            Bukkit.getPluginManager().registerEvent(AsyncPlayerChatEvent.class, listener, priority, (l, event) -> {
+                if (!(event instanceof AsyncPlayerChatEvent)) return;
+                AsyncPlayerChatEvent e = (AsyncPlayerChatEvent) event;
+                if (e.isCancelled()) return;
+                listener.processChatEvent(e.getPlayer(), e.getMessage(), e);
+                if (e.isCancelled()) {
+                    e.setFormat("");
+                }
+            }, listener.plugin, true);
+        }),
+        PAPER((listener, priority) -> {
+            Bukkit.getPluginManager().registerEvent(AsyncChatEvent.class, listener, priority, (l, event) -> {
+                if (!(event instanceof AsyncChatEvent)) return;
+                AsyncChatEvent e = (AsyncChatEvent) event;
+                if (e.isCancelled()) return;
+                Player player = e.getPlayer();
+                String message = LegacyComponentSerializer.legacySection().serialize(e.message());
+                listener.processChatEvent(player, message, e);
+            }, listener.plugin, true);
+        })
+
+        ;
+        private final BiConsumer<ChatListener, EventPriority> impl;
+        ChatEventImpl(BiConsumer<ChatListener, EventPriority> impl) {
+            this.impl = impl;
+        }
+
+        public void register(ChatListener listener, EventPriority priority) {
+            impl.accept(listener, priority);
+        }
+    }
+
     @Override
-    @SuppressWarnings("deprecation")
     public void reloadConfig(MemoryConfiguration config) {
         HandlerList.unregisterAll(this);
         File folder = plugin.resolve(config.getString("folder.chat", "./chat"));
@@ -72,28 +107,12 @@ public class ChatListener extends AbstractModule implements Listener {
         }
         reloadChatFormat(folder);
         reloadChatMode(config);
+
+        ChatEventImpl chatEvent = getChatEvent(config, "listener.event", ChatEventImpl.PAPER);
         EventPriority priority = getPriority(config, "listener.priority", EventPriority.HIGHEST);
 
-        if (isPaperEvent) {
-            Bukkit.getPluginManager().registerEvent(AsyncChatEvent.class, this, priority, (listener, event) -> {
-                if (!(event instanceof AsyncChatEvent)) return;
-                AsyncChatEvent e = (AsyncChatEvent) event;
-                if (e.isCancelled()) return;
-                Player player = e.getPlayer();
-                String message = LegacyComponentSerializer.legacySection().serialize(e.message());
-                processChatEvent(player, message, e);
-            }, plugin, true);
-        } else {
-            Bukkit.getPluginManager().registerEvent(AsyncPlayerChatEvent.class, this, priority, (listener, event) -> {
-                if (!(event instanceof AsyncPlayerChatEvent)) return;
-                AsyncPlayerChatEvent e = (AsyncPlayerChatEvent) event;
-                if (e.isCancelled()) return;
-                processChatEvent(e.getPlayer(), e.getMessage(), e);
-                if (e.isCancelled()) {
-                    e.setFormat("");
-                }
-            }, plugin, true);
-        }
+        info("使用聊天事件类型 " + chatEvent.name());
+        chatEvent.register(this, priority);
     }
 
     private void processChatEvent(Player player, String message, Cancellable e) {
@@ -338,13 +357,24 @@ public class ChatListener extends AbstractModule implements Listener {
     }
 
     @SuppressWarnings("SameParameterValue")
-    private static EventPriority getPriority(ConfigurationSection config, String key, EventPriority def) {
+    private EventPriority getPriority(ConfigurationSection config, String key, EventPriority def) {
         String str = config.getString(key);
         EventPriority priority = Util.valueOr(EventPriority.class, str, def);
         if (priority == EventPriority.MONITOR) {
             return EventPriority.HIGHEST;
         } else {
             return priority;
+        }
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    private ChatEventImpl getChatEvent(ConfigurationSection config, String key, ChatEventImpl def) {
+        String str = config.getString(key);
+        ChatEventImpl chatEvent = Util.valueOr(ChatEventImpl.class, str, def);
+        if (!isPaperEvent && chatEvent.equals(ChatEventImpl.PAPER)) {
+            return ChatEventImpl.BUKKIT;
+        } else {
+            return chatEvent;
         }
     }
 

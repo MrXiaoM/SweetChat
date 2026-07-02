@@ -7,6 +7,10 @@ listener:
   # LOWEST -> LOW -> NORMAL -> HIGH -> HIGHEST
   # 作为聊天插件，比较建议使用 HIGHEST 优先级
   priority: HIGHEST
+  # 监听什么事件来处理聊天，不支持时将会自动回退
+  # BUKKIT - Bukkit 接口的聊天事件，处理时机较往前，但会与部分使用 Paper 聊天事件的插件冲突 (org.bukkit.event.player.AsyncPlayerChatEvent)
+  # PAPER - Paper 接口的现代聊天事件，但处理时机较往后 (io.papermc.paper.event.player.AsyncChatEvent)
+  event: PAPER
 
 # 聊天模式设置
 chat-mode:
