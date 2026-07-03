@@ -15,7 +15,7 @@ buildscript {
 val base = LibraryHelper(project)
 
 group = "top.mrxiaom.sweet.chat"
-version = "1.0.4"
+version = "1.0.5"
 val targetJavaVersion = 8
 val pluginBaseModules = base.modules.run { listOf(library, paper, actions, l10n, misc) }
 val shadowGroup = "top.mrxiaom.sweet.chat.libs"
@@ -38,7 +38,7 @@ dependencies {
     compileOnly("org.jetbrains:annotations:24.0.0")
 
     compileOnly("com.github.MascusJeoraly:LanguageUtils:1.9")
-    compileOnly("com.github.retrooper:packetevents-spigot:2.12.1")
+    compileOnly("com.github.retrooper:packetevents-spigot:2.13.0")
     compileOnly("me.clip:placeholderapi:2.12.2")
     compileOnly("com.github.NEZNAMY:TAB-API:6.0.0")
 
