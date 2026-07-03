@@ -56,6 +56,7 @@ public class LocalMode implements IChatMode, IReloadable {
         if (format == null) {
             return false;
         }
+        ctx.tag("__internal__format", format);
 
         // 聊天过滤器检查
         for (IChatFilter filter : FilterManager.inst().getFilters()) {

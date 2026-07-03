@@ -3,6 +3,7 @@ package top.mrxiaom.sweet.chat;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
 import top.mrxiaom.pluginbase.BukkitPlugin;
+import top.mrxiaom.pluginbase.actions.ActionProviders;
 import top.mrxiaom.pluginbase.func.LanguageManager;
 import top.mrxiaom.pluginbase.paper.PaperFactory;
 import top.mrxiaom.pluginbase.resolver.DefaultLibraryResolver;
@@ -12,6 +13,8 @@ import top.mrxiaom.pluginbase.utils.depend.PAPI;
 import top.mrxiaom.pluginbase.utils.inventory.InventoryFactory;
 import top.mrxiaom.pluginbase.utils.item.ItemEditor;
 import top.mrxiaom.pluginbase.utils.scheduler.FoliaLibScheduler;
+import top.mrxiaom.sweet.chat.actions.ActionLog;
+import top.mrxiaom.sweet.chat.actions.ActionMessageOp;
 import top.mrxiaom.sweet.chat.api.*;
 import top.mrxiaom.sweet.chat.database.MessageDatabase;
 import top.mrxiaom.sweet.chat.database.ModeDatabase;
@@ -48,7 +51,7 @@ public class SweetChat extends BukkitPlugin {
         this.scheduler = new FoliaLibScheduler(this);
 
         try {
-            //noinspection ResultOfMethodCallIgnored
+            //noinspection ResultOfMethodCallIgnored, deprecation
             getDescription().getLibraries();
         } catch (LinkageError ignored) {
             info("正在检查依赖库状态");
@@ -100,6 +103,12 @@ public class SweetChat extends BukkitPlugin {
     @Override
     protected void beforeEnable() {
         ComponentUtils.init(this);
+
+        ActionProviders.registerActionProviders(
+                ActionLog.PROVIDER,
+                ActionMessageOp.PROVIDER
+        );
+
         LanguageManager.inst()
                 .setLangFile("messages.yml")
                 .register(Messages.class)

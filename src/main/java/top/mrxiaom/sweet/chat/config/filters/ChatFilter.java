@@ -1,5 +1,6 @@
 package top.mrxiaom.sweet.chat.config.filters;
 
+import net.kyori.adventure.text.TextComponent;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.ApiStatus;
@@ -7,9 +8,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import top.mrxiaom.pluginbase.actions.ActionProviders;
 import top.mrxiaom.pluginbase.api.IAction;
+import top.mrxiaom.pluginbase.utils.ListPair;
 import top.mrxiaom.sweet.chat.SweetChat;
 import top.mrxiaom.sweet.chat.api.ChatContext;
 import top.mrxiaom.sweet.chat.api.IChatFilter;
+import top.mrxiaom.sweet.chat.config.formats.ChatFormat;
+import top.mrxiaom.sweet.chat.utils.ComponentUtils;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -97,6 +101,10 @@ public class ChatFilter implements IChatFilter {
                     throw new IllegalArgumentException("找不到操作池 " + value);
                 }
                 return (ctx, matchedText) -> new Action(ctx, matchedText, actions);
+            }
+            if ("SHADOW".equalsIgnoreCase(type)) {
+                List<IAction> actions = actionPools.getOrDefault(value, new ArrayList<>());
+                return (ctx, matchedText) -> new Shadow(ctx, matchedText, actions);
             }
         }
         throw new IllegalArgumentException("无效的惩罚配置");
@@ -202,7 +210,32 @@ public class ChatFilter implements IChatFilter {
         public boolean punish() {
             SweetChat plugin = ctx.plugin();
             Player player = ctx.player();
-            plugin.getScheduler().runTask(() -> ActionProviders.run(plugin, player, actions));
+            ListPair<String, Object> r = new ListPair<>();
+            r.add("%plain_text%", ctx.text());
+            plugin.getScheduler().runTask(() -> ActionProviders.run(plugin, player, actions, r));
+            return true;
+        }
+    }
+
+    public static class Shadow extends Matched {
+        private final List<IAction> actions;
+        private Shadow(ChatContext ctx, String matchedText, List<IAction> actions) {
+            super(ctx, matchedText);
+            this.actions = actions;
+        }
+
+        @Override
+        public boolean punish() {
+            SweetChat plugin = ctx.plugin();
+            Player player = ctx.player();
+            ListPair<String, Object> r = new ListPair<>();
+            r.add("%plain_text%", ctx.text());
+            Object tagFormat = ctx.tag("__internal__format");
+            if (tagFormat instanceof ChatFormat) {
+                TextComponent component = ((ChatFormat) tagFormat).build(ctx).build();
+                ComponentUtils.send(player, component);
+            }
+            plugin.getScheduler().runTask(() -> ActionProviders.run(plugin, player, actions, r));
             return true;
         }
     }

@@ -2,9 +2,14 @@
 text-pools:
   mask: ['*']
 # 操作池示例
+# 凡是执行操作池的惩罚，均支持以发送者为上下文的 PAPI 变量，以及以下额外变量
+# %plain_text% - 发送的原文去除样式
 action-pools:
   unfriendly:
     - '[message]&e你要发送的聊天消息中包含不友好内容'
+  shadow-ban:
+    - '[log][ShadowBan] 玩家 %player_name% 试图发送 %plain_text%'
+    - '[message_op]&7[&c&l聊天&r&7][&fShadowBan&7] &3玩家&b %player_name% &3试图发送:&f %plain_text%'
 
 # 聊天过滤器配置
 # 可添加多个聊天过滤器，按顺序进行判定
@@ -21,9 +26,15 @@ filters:
     # 'REPLACE_MESSAGE 本池ID' 将整段聊天消息都替换为指定文本池中的随机文本
     # 'REPLACE_MESSAGE_RAW 文本' 将整段聊天消息都替换为指定文本
     # 'ACTION 操作池ID' 禁止发送聊天消息，并执行操作
+    # 'SHADOW 操作池ID' 影子封禁，只有发送人自己可见聊天消息，并执行操作
     # 'DISALLOW' 禁止发送聊天消息，不进行额外操作
     punishment: 'REPLACE_MESSAGE_RAW 这服真好玩哎，我去拉我朋友'
+
   - contains: ['傻逼', '傻狗', '煞笔']
     punishment: 'REPLACE_RAW 可爱鬼'
+
   - contains: ['对号入座？', '对号入座?']
     punishment: 'REPLACE_MESSAGE_RAW 您拨打的号码已关机'
+
+  - contains: ['脑残']
+    punishment: 'SHADOW shadow-ban'

@@ -61,6 +61,8 @@ public class GlobalMode implements IChatMode, IReloadable {
         if (format == null) {
             return false;
         }
+        ctx.tag("__internal__format", format);
+
         if (!requirement.isEmpty()) {
             try {
                 SweetChat plugin = parent.plugin;
