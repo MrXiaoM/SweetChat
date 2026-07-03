@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import top.mrxiaom.pluginbase.actions.ActionProviders;
 import top.mrxiaom.pluginbase.api.IAction;
+import top.mrxiaom.pluginbase.utils.AdventureUtil;
 import top.mrxiaom.pluginbase.utils.ListPair;
 import top.mrxiaom.sweet.chat.SweetChat;
 import top.mrxiaom.sweet.chat.api.ChatContext;
@@ -211,7 +212,7 @@ public class ChatFilter implements IChatFilter {
             SweetChat plugin = ctx.plugin();
             Player player = ctx.player();
             ListPair<String, Object> r = new ListPair<>();
-            r.add("%plain_text%", ctx.text());
+            r.add("%plain_text%", AdventureUtil.plain(AdventureUtil.miniMessage(ctx.text())));
             plugin.getScheduler().runTask(() -> ActionProviders.run(plugin, player, actions, r));
             return true;
         }
@@ -229,7 +230,7 @@ public class ChatFilter implements IChatFilter {
             SweetChat plugin = ctx.plugin();
             Player player = ctx.player();
             ListPair<String, Object> r = new ListPair<>();
-            r.add("%plain_text%", ctx.text());
+            r.add("%plain_text%", AdventureUtil.plain(AdventureUtil.miniMessage(ctx.text())));
             Object tagFormat = ctx.tag("__internal__format");
             if (tagFormat instanceof ChatFormat) {
                 TextComponent component = ((ChatFormat) tagFormat).build(ctx).build();
