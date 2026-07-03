@@ -138,22 +138,22 @@ public class MessageReplacementManager extends AbstractModule implements PluginM
             bungeeTask.cancel();
             bungeeTask = null;
         }
+        enable = pluginConfig.getBoolean("modules.replacements", true);
+
+        itemDisplayInput.clear();
+        placeholdersInput.clear();
+        placeholdersRegex.clear();
+        if (!enable) return;
+
         File file = plugin.resolve("./replacements.yml");
         if (!file.exists()) {
             plugin.saveResource("replacements.yml");
         }
         FileConfiguration config = plugin.resolveGotoFlag(ConfigUtils.load(file));
 
-        enable = pluginConfig.getBoolean("modules.replacements", true);
-
-        itemDisplayInput.clear();
-        placeholdersInput.clear();
-        placeholdersRegex.clear();
         itemDisplayFormat = config.getString("message-replacements.item-display.format", "[%item%]").replace("%item%", "<item/>");
         itemDisplayOnlyReplaceOnce = config.getBoolean("message-replacements.item-display.one-slot-only-replace-once", true);
         placeholdersOnlyReplaceOnce = config.getBoolean("message-replacements.placeholders.one-key-only-replace-once", true);
-
-        if (!enable) return;
 
         ConfigurationSection section;
         section = config.getConfigurationSection("message-replacements.item-display.input");

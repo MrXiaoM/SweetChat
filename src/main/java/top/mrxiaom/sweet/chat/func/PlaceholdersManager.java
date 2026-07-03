@@ -33,15 +33,15 @@ public class PlaceholdersManager extends AbstractModule {
 
     @Override
     public void reloadConfig(MemoryConfiguration pluginConfig) {
+        enable = pluginConfig.getBoolean("modules.placeholders", true);
+
+        if (!enable) return;
+
         File file = plugin.resolve("./placeholders.yml");
         if (!file.exists()) {
             plugin.saveResource("placeholders.yml", file);
         }
         FileConfiguration config = plugin.resolveGotoFlag(ConfigUtils.load(file));
-
-        enable = pluginConfig.getBoolean("modules.placeholders", true);
-
-        if (!enable) return;
 
         reloadConditionalPlaceholders(config);
         info("加载了 " + conditionalPlaceholderMap.size() + " 个条件变量");

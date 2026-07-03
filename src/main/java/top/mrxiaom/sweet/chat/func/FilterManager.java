@@ -69,13 +69,6 @@ public class FilterManager extends AbstractModule implements IChatFilterProvider
 
     @Override
     public void reloadConfig(MemoryConfiguration pluginConfig) {
-        File file = plugin.resolve("./filter.yml");
-        if (!file.exists()) {
-            plugin.saveResource("filter.yml", file);
-        }
-        ConfigurationSection section;
-        FileConfiguration config = plugin.resolveGotoFlag(ConfigUtils.load(file));
-
         enable = pluginConfig.getBoolean("modules.filter", true);
 
         textPools.clear();
@@ -83,6 +76,13 @@ public class FilterManager extends AbstractModule implements IChatFilterProvider
         configFilterList.clear();
 
         if (!enable) return;
+
+        File file = plugin.resolve("./filter.yml");
+        if (!file.exists()) {
+            plugin.saveResource("filter.yml", file);
+        }
+        ConfigurationSection section;
+        FileConfiguration config = plugin.resolveGotoFlag(ConfigUtils.load(file));
 
         section = config.getConfigurationSection("text-pools");
         if (section != null) for (String key : section.getKeys(false)) {

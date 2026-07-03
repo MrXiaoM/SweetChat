@@ -63,18 +63,18 @@ public class MessageStyleManager extends AbstractModule {
 
     @Override
     public void reloadConfig(MemoryConfiguration pluginConfig) {
-        File file = plugin.resolve("./styles.yml");
-        if (!file.exists()) {
-            plugin.saveResource("styles.yml", file);
-        }
-        FileConfiguration config = plugin.resolveGotoFlag(ConfigUtils.load(file));
-
         enable = pluginConfig.getBoolean("modules.styles", true);
 
         styleMap.clear();
         styleWithPriority.clear();
 
         if (!enable) return;
+
+        File file = plugin.resolve("./styles.yml");
+        if (!file.exists()) {
+            plugin.saveResource("styles.yml", file);
+        }
+        FileConfiguration config = plugin.resolveGotoFlag(ConfigUtils.load(file));
 
         ConfigurationSection section = config.getConfigurationSection("style-by-permission");
         if (section != null) for (String key : section.getKeys(false)) {
