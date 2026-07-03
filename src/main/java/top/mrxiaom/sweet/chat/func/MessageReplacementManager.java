@@ -53,6 +53,7 @@ public class MessageReplacementManager extends AbstractModule implements PluginM
     private final List<IMessageProcessor> messagePreProcessorRegistry = new ArrayList<>();
     private final List<IMessageProcessor> messagePostProcessorRegistry = new ArrayList<>();
     private final Map<String, EnumItemSource> itemDisplayInput = new HashMap<>();
+    private boolean enable;
     private String itemDisplayFormat;
     private boolean itemDisplayOnlyReplaceOnce;
     private final Map<String, ComponentBuilder> placeholdersInput = new HashMap<>();
@@ -64,6 +65,10 @@ public class MessageReplacementManager extends AbstractModule implements PluginM
     public MessageReplacementManager(SweetChat plugin) {
         super(plugin);
         Bukkit.getMessenger().registerIncomingPluginChannel(plugin, "BungeeCord", this);
+    }
+
+    public boolean isEnabled() {
+        return enable;
     }
 
     @ApiStatus.Internal
@@ -138,10 +143,19 @@ public class MessageReplacementManager extends AbstractModule implements PluginM
             plugin.saveResource("replacements.yml");
         }
         FileConfiguration config = plugin.resolveGotoFlag(ConfigUtils.load(file));
-        ConfigurationSection section;
+
+        enable = pluginConfig.getBoolean("modules.replacements", true);
+
+        itemDisplayInput.clear();
+        placeholdersInput.clear();
+        placeholdersRegex.clear();
         itemDisplayFormat = config.getString("message-replacements.item-display.format", "[%item%]").replace("%item%", "<item/>");
         itemDisplayOnlyReplaceOnce = config.getBoolean("message-replacements.item-display.one-slot-only-replace-once", true);
-        itemDisplayInput.clear();
+        placeholdersOnlyReplaceOnce = config.getBoolean("message-replacements.placeholders.one-key-only-replace-once", true);
+
+        if (!enable) return;
+
+        ConfigurationSection section;
         section = config.getConfigurationSection("message-replacements.item-display.input");
         if (section != null) for (String key : section.getKeys(false)) {
             String str = section.getString(key);
@@ -152,9 +166,6 @@ public class MessageReplacementManager extends AbstractModule implements PluginM
                 warn("[item-display] input 中的键 " + key + " 对应的值 " + str + " 无效");
             }
         }
-        placeholdersOnlyReplaceOnce = config.getBoolean("message-replacements.placeholders.one-key-only-replace-once", true);
-        placeholdersInput.clear();
-        placeholdersRegex.clear();
         section = config.getConfigurationSection("message-replacements.placeholders.input");
         if (section != null) for (String key : section.getKeys(false)) {
             if (section.isConfigurationSection(key)) {
@@ -216,6 +227,7 @@ public class MessageReplacementManager extends AbstractModule implements PluginM
 
     @NotNull
     public String handle(@NotNull String inputText, @NotNull ChatContext ctx, @NotNull MiniMessage.Builder builder) {
+        if (!enable) return inputText;
         String text = inputText;
         Player player = ctx.player();
         for (IMessageProcessor processor : messagePreProcessorRegistry) {

@@ -108,11 +108,13 @@ public class ChatListener extends AbstractModule implements Listener {
         reloadChatFormat(folder);
         reloadChatMode(config);
 
-        ChatEventImpl chatEvent = getChatEvent(config, "listener.event", ChatEventImpl.PAPER);
-        EventPriority priority = getPriority(config, "listener.priority", EventPriority.HIGHEST);
+        if (config.getBoolean("listener.enable", true)) {
+            ChatEventImpl chatEvent = getChatEvent(config, "listener.event", ChatEventImpl.PAPER);
+            EventPriority priority = getPriority(config, "listener.priority", EventPriority.HIGHEST);
 
-        info("使用聊天事件类型 " + chatEvent.name());
-        chatEvent.register(this, priority);
+            info("使用聊天事件类型 " + chatEvent.name());
+            chatEvent.register(this, priority);
+        }
     }
 
     private void processChatEvent(Player player, String message, Cancellable e) {

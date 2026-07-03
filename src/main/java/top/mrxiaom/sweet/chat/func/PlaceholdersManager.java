@@ -4,6 +4,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import top.mrxiaom.pluginbase.func.AutoRegister;
@@ -15,17 +16,19 @@ import top.mrxiaom.sweet.chat.config.placeholders.CPStatements;
 import top.mrxiaom.sweet.chat.config.placeholders.CPWhenMatch;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Supplier;
 
 @AutoRegister
 public class PlaceholdersManager extends AbstractModule {
+    private boolean enable;
     private final Map<String, IConditionalPlaceholder> conditionalPlaceholderMap = new HashMap<>();
     public PlaceholdersManager(SweetChat plugin) {
         super(plugin);
+    }
+
+    public boolean isEnabled() {
+        return enable;
     }
 
     @Override
@@ -35,7 +38,13 @@ public class PlaceholdersManager extends AbstractModule {
             plugin.saveResource("placeholders.yml", file);
         }
         FileConfiguration config = plugin.resolveGotoFlag(ConfigUtils.load(file));
+
+        enable = pluginConfig.getBoolean("modules.placeholders", true);
+
+        if (!enable) return;
+
         reloadConditionalPlaceholders(config);
+        info("加载了 " + conditionalPlaceholderMap.size() + " 个条件变量");
     }
 
     private void reloadConditionalPlaceholders(FileConfiguration config) {
@@ -93,7 +102,11 @@ public class PlaceholdersManager extends AbstractModule {
             }
             warn("条件变量 " + key + " 不匹配任何类型的格式");
         }
-        info("加载了 " + conditionalPlaceholderMap.size() + " 个条件变量");
+    }
+
+    @NotNull
+    public Map<String, IConditionalPlaceholder> getConditionalPlaceholderMap() {
+        return Collections.unmodifiableMap(conditionalPlaceholderMap);
     }
 
     @Nullable
@@ -101,7 +114,9 @@ public class PlaceholdersManager extends AbstractModule {
         return conditionalPlaceholderMap.get(name);
     }
 
+    @ApiStatus.Internal
     public void addReplacements(@NotNull Player player, @NotNull List<Pair<String, Object>> r) {
+        if (!enable) return;
         for (Map.Entry<String, IConditionalPlaceholder> entry : conditionalPlaceholderMap.entrySet()) {
             String key = "${cond:" + entry.getKey() + "}";
             IConditionalPlaceholder placeholder = entry.getValue();

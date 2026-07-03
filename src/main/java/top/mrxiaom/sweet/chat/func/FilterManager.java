@@ -20,6 +20,7 @@ import java.util.*;
 
 @AutoRegister
 public class FilterManager extends AbstractModule implements IChatFilterProvider {
+    private boolean enable;
     private final List<IChatFilter> fixedFilterRegistry = new ArrayList<>();
     private final List<IChatFilterProvider> filterProviderRegistry = new ArrayList<>();
     private final Map<String, List<String>> textPools = new HashMap<>();
@@ -28,6 +29,10 @@ public class FilterManager extends AbstractModule implements IChatFilterProvider
     public FilterManager(SweetChat plugin) {
         super(plugin);
         registerFilterProvider(this);
+    }
+
+    public boolean isEnabled() {
+        return enable;
     }
 
     @ApiStatus.Internal
@@ -71,17 +76,22 @@ public class FilterManager extends AbstractModule implements IChatFilterProvider
         ConfigurationSection section;
         FileConfiguration config = plugin.resolveGotoFlag(ConfigUtils.load(file));
 
+        enable = pluginConfig.getBoolean("modules.filter", true);
+
         textPools.clear();
+        actionPools.clear();
+        configFilterList.clear();
+
+        if (!enable) return;
+
         section = config.getConfigurationSection("text-pools");
         if (section != null) for (String key : section.getKeys(false)) {
             textPools.put(key, section.getStringList(key));
         }
-        actionPools.clear();
         section = config.getConfigurationSection("action-pools");
         if (section != null) for (String key : section.getKeys(false)) {
             actionPools.put(key, ActionProviders.loadActions(section, key));
         }
-        configFilterList.clear();
         List<ConfigurationSection> sectionList = ConfigUtils.getSectionList(config, "filters");
         for (int i = 0; i < sectionList.size(); i++) {
             IChatFilter filter = null;
@@ -104,6 +114,7 @@ public class FilterManager extends AbstractModule implements IChatFilterProvider
 
     @NotNull
     public List<IChatFilter> getFilters() {
+        if (!enable) return Collections.emptyList();
         List<IChatFilter> filters = new ArrayList<>();
         filters.addAll(fixedFilterRegistry);
         filters.addAll(configFilterList);

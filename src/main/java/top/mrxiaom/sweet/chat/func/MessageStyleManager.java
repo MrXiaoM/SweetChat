@@ -28,8 +28,13 @@ public class MessageStyleManager extends AbstractModule {
     private final List<IComponentProcessor> stylePostProcessorRegistry = new ArrayList<>();
     private final Map<String, ChatStyleByPerm> styleMap = new HashMap<>();
     private final List<ChatStyleByPerm> styleWithPriority = new ArrayList<>();
+    private boolean enable;
     public MessageStyleManager(SweetChat plugin) {
         super(plugin);
+    }
+
+    public boolean isEnabled() {
+        return enable;
     }
 
     @ApiStatus.Internal
@@ -63,8 +68,14 @@ public class MessageStyleManager extends AbstractModule {
             plugin.saveResource("styles.yml", file);
         }
         FileConfiguration config = plugin.resolveGotoFlag(ConfigUtils.load(file));
+
+        enable = pluginConfig.getBoolean("modules.styles", true);
+
         styleMap.clear();
         styleWithPriority.clear();
+
+        if (!enable) return;
+
         ConfigurationSection section = config.getConfigurationSection("style-by-permission");
         if (section != null) for (String key : section.getKeys(false)) {
             ConfigurationSection s = section.getConfigurationSection(key);
@@ -75,6 +86,7 @@ public class MessageStyleManager extends AbstractModule {
             }
         }
         styleWithPriority.sort(Comparator.comparingInt(ChatStyleByPerm::priority));
+        info("加载了 " + styleWithPriority.size() + " 个按权限分配样式");
     }
 
     @Nullable
@@ -94,6 +106,7 @@ public class MessageStyleManager extends AbstractModule {
 
     @NotNull
     public Component handleStyle(@NotNull Component input, @NotNull ChatContext ctx) {
+        if (!enable) return input;
         Component component = input.asComponent();
         Player player = ctx.player();
         ChatStyleByPerm style = getStyle(player);

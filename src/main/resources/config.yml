@@ -2,7 +2,10 @@
 folder:
   chat: './chat'
 
+# 聊天监听器设置
 listener:
+  # 是否启用聊天监听器，关闭将不会处理玩家聊天，失去本插件大部分功能
+  enable: true
   # 事件监听优先级，服务端会按以下顺序执行事件监听处理器
   # LOWEST -> LOW -> NORMAL -> HIGH -> HIGHEST
   # 作为聊天插件，比较建议使用 HIGHEST 优先级
@@ -11,6 +14,21 @@ listener:
   # BUKKIT - Bukkit 接口的聊天事件，处理时机较往前，但会与部分使用 Paper 聊天事件的插件冲突 (org.bukkit.event.player.AsyncPlayerChatEvent)
   # PAPER - Paper 接口的现代聊天事件，但处理时机较往后 (io.papermc.paper.event.player.AsyncChatEvent)
   event: PAPER
+
+# 功能模块配置管理
+modules:
+  # 是否启用消息过滤器功能
+  # 关闭此选项，会影响其它附属插件向 SweetChat 注册的过滤器
+  filter: true
+  # 是否启用条件变量功能
+  # 关闭此选项，不影响在 PAPI 变量中使用条件变量
+  placeholders: true
+  # 是否启用消息替换功能
+  # 关闭此选项，会影响其它附属插件向 SweetChat 注册的替换器
+  replacements: true
+  # 是否启用消息样式功能
+  # 关闭此选项，会影响其它附属插件向 SweetChat 注册的样式
+  styles: true
 
 # 聊天模式设置
 chat-mode:
