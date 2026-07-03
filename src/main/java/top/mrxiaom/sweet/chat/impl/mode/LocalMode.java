@@ -92,6 +92,7 @@ public class LocalMode implements IChatMode, IReloadable {
         World world1 = loc1.getWorld();
         World world2 = loc2.getWorld();
         if (world1 == null || world1 != world2) return true;
+        if (radius < 0) return false;
         return loc1.distance(loc2) > radius;
     }
 }
