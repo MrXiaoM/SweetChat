@@ -8,6 +8,7 @@ softdepend:
   - LangUtils
   - packetevents
   - TAB
+  - CMI
 authors: [ MrXiaoM ]
 folia-supported: true
 # PluginBase Libraries ${libraries_config}

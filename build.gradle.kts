@@ -42,6 +42,8 @@ dependencies {
     compileOnly("me.clip:placeholderapi:2.12.2")
     compileOnly("com.github.NEZNAMY:TAB-API:6.0.0")
 
+    compileOnly("com.github.Zrips:CMI-API:9.8.6.4")
+
     base.library(LibraryHelper.adventure("4.25.0"))
     base.library(base.depend.HikariCP)
     base.collectPluginHolders()

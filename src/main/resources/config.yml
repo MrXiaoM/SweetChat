@@ -30,6 +30,12 @@ modules:
   # 关闭此选项，会影响其它附属插件向 SweetChat 注册的样式
   styles: true
 
+# 与其它插件联动支持
+interaction:
+  CMI:
+    # 发送聊天后，显示聊天气泡
+    chat-bubble: true
+
 # 聊天模式设置
 chat-mode:
   # 玩家直接发送聊天消息的默认聊天模式
