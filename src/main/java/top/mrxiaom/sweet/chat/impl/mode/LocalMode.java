@@ -1,5 +1,6 @@
 package top.mrxiaom.sweet.chat.impl.mode;
 
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -7,10 +8,8 @@ import org.bukkit.World;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import top.mrxiaom.sweet.chat.api.ChatContext;
-import top.mrxiaom.sweet.chat.api.IChatFilter;
-import top.mrxiaom.sweet.chat.api.IChatMode;
-import top.mrxiaom.sweet.chat.api.IReloadable;
+import top.mrxiaom.pluginbase.utils.Pair;
+import top.mrxiaom.sweet.chat.api.*;
 import top.mrxiaom.sweet.chat.config.formats.ChatFormat;
 import top.mrxiaom.sweet.chat.func.ChatListener;
 import top.mrxiaom.sweet.chat.func.FilterManager;
@@ -66,7 +65,12 @@ public class LocalMode implements IChatMode, IReloadable {
             }
         }
 
-        TextComponent component = format.build(ctx).build();
+        List<Pair<IFormatPart, Component>> parts = format.buildList(ctx);
+        TextComponent.Builder component = Component.text();
+        for (Pair<IFormatPart, Component> part : parts) {
+            component.append(part.value());
+        }
+        TextComponent finalMessage = component.build();
 
         Location loc = player.getLocation();
         List<Player> players = new ArrayList<>();
@@ -79,7 +83,12 @@ public class LocalMode implements IChatMode, IReloadable {
             }
             players.add(p);
         }
-        ChatListener.inst().broadcast(players, component);
+        ChatListener.inst().broadcast(players, finalMessage);
+
+        ChatPostContext postContext = new ChatPostContext(ctx, players, parts, finalMessage);
+        for (IPostChatAction action : parent.postChatRegistry().all()) {
+            action.execute(postContext);
+        }
 
         return true;
     }

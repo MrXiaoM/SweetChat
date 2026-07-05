@@ -8,10 +8,12 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import top.mrxiaom.pluginbase.utils.ConfigUtils;
+import top.mrxiaom.pluginbase.utils.Pair;
 import top.mrxiaom.sweet.chat.api.ChatContext;
 import top.mrxiaom.sweet.chat.api.IFormatPart;
 import top.mrxiaom.sweet.chat.func.ChatListener;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -62,11 +64,27 @@ public class ChatFormat {
         return build(crossServerFormat, ctx);
     }
 
+    public List<Pair<IFormatPart, Component>> buildList(ChatContext ctx) {
+        return buildList(chatFormat, ctx);
+    }
+
+    public List<Pair<IFormatPart, Component>> buildListCrossServer(ChatContext ctx) {
+        return buildList(crossServerFormat, ctx);
+    }
+
     private static TextComponent.Builder build(List<IFormatPart> partList, ChatContext ctx) {
         TextComponent.Builder builder = Component.text();
         for (IFormatPart part : partList) {
             builder.append(part.get(ctx));
         }
         return builder;
+    }
+
+    private static List<Pair<IFormatPart, Component>> buildList(List<IFormatPart> partList, ChatContext ctx) {
+        List<Pair<IFormatPart, Component>> list = new ArrayList<>();
+        for (IFormatPart part : partList) {
+            list.add(Pair.of(part, part.get(ctx)));
+        }
+        return list;
     }
 }

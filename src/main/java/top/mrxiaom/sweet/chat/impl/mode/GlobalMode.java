@@ -1,26 +1,24 @@
 package top.mrxiaom.sweet.chat.impl.mode;
 
 import com.ezylang.evalex.Expression;
+import com.google.common.collect.Lists;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.MemoryConfiguration;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import top.mrxiaom.pluginbase.actions.ActionProviders;
 import top.mrxiaom.pluginbase.api.IAction;
+import top.mrxiaom.pluginbase.utils.Pair;
 import top.mrxiaom.sweet.chat.SweetChat;
-import top.mrxiaom.sweet.chat.api.ChatContext;
-import top.mrxiaom.sweet.chat.api.IChatFilter;
-import top.mrxiaom.sweet.chat.api.IChatMode;
-import top.mrxiaom.sweet.chat.api.IReloadable;
+import top.mrxiaom.sweet.chat.api.*;
 import top.mrxiaom.sweet.chat.config.formats.ChatFormat;
 import top.mrxiaom.sweet.chat.func.BroadcastManager;
 import top.mrxiaom.sweet.chat.func.ChatListener;
 import top.mrxiaom.sweet.chat.func.FilterManager;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Predicate;
 
 /**
@@ -87,10 +85,22 @@ public class GlobalMode implements IChatMode, IReloadable {
             }
         }
 
-        TextComponent component = format.build(ctx).build();
-        ChatListener.inst().broadcast(Bukkit.getOnlinePlayers(), component);
+        List<Pair<IFormatPart, Component>> parts = format.buildList(ctx);
+        TextComponent.Builder component = Component.text();
+        for (Pair<IFormatPart, Component> part : parts) {
+            component.append(part.value());
+        }
+        TextComponent finalMessage = component.build();
+        List<Player> players = Lists.newArrayList(Bukkit.getOnlinePlayers());
 
+        ChatListener.inst().broadcast(players, finalMessage);
         BroadcastManager.inst().broadcast(ctx, format);
+
+        ChatPostContext postContext = new ChatPostContext(ctx, players, parts, finalMessage);
+        for (IPostChatAction action : parent.postChatRegistry().all()) {
+            action.execute(postContext);
+        }
+
         return true;
     }
 

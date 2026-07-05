@@ -18,7 +18,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import top.mrxiaom.pluginbase.actions.ActionProviders;
 import top.mrxiaom.pluginbase.api.IAction;
+import top.mrxiaom.pluginbase.api.IRegistry;
 import top.mrxiaom.pluginbase.data.Duration;
+import top.mrxiaom.pluginbase.data.SimpleRegistry;
 import top.mrxiaom.pluginbase.func.AutoRegister;
 import top.mrxiaom.pluginbase.utils.*;
 import top.mrxiaom.sweet.chat.Messages;
@@ -48,6 +50,7 @@ public class ChatListener extends AbstractModule implements Listener {
     private final Map<String, IFormatPartProvider> partRegistry = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     private final Map<String, IChatMode> chatModeRegistry = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     private final Map<String, ChatFormat> chatFormatMap = new HashMap<>();
+    private final IRegistry<IPostChatAction> postChatRegistry = new SimpleRegistry<>();
     private final boolean isPaperEvent = Util.isPresent("io.papermc.paper.event.player.AsyncChatEvent");
     private IChatMode chatModeDefault;
     private final Map<String, List<IChatMode>> chatModeSwitchPrefix = new HashMap<>();
@@ -356,6 +359,11 @@ public class ChatListener extends AbstractModule implements Listener {
     @ApiStatus.Internal
     public void unregisterChatMode(@NotNull String modeId) {
         chatModeRegistry.remove(modeId);
+    }
+
+    @NotNull
+    public IRegistry<IPostChatAction> postChatRegistry() {
+        return postChatRegistry;
     }
 
     @SuppressWarnings("SameParameterValue")
