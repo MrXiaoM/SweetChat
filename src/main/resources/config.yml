@@ -21,7 +21,7 @@ modules:
   # 关闭此选项，会影响其它附属插件向 SweetChat 注册的过滤器
   filter: true
   # 是否启用条件变量功能
-  # 关闭此选项，不影响在 PAPI 变量中使用条件变量
+  # 关闭此选项，不会加载配置文件，会影响在 PAPI 变量中使用条件变量
   placeholders: true
   # 是否启用消息替换功能
   # 关闭此选项，会影响其它附属插件向 SweetChat 注册的替换器
