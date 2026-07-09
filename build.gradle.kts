@@ -15,7 +15,7 @@ buildscript {
 val base = LibraryHelper(project)
 
 group = "top.mrxiaom.sweet.chat"
-version = "1.0.5"
+version = "1.0.6"
 val targetJavaVersion = 8
 val pluginBaseModules = base.modules.run { listOf(library, paper, actions, l10n, misc) }
 val shadowGroup = "top.mrxiaom.sweet.chat.libs"
