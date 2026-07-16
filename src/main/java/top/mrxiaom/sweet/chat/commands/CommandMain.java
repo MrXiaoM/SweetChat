@@ -192,7 +192,7 @@ public class CommandMain extends AbstractModule implements CommandExecutor, TabC
                 requireRefreshCache(player, msg.str());
             }
             return Messages.Commands.unmute__success.tm(sender,
-                    Pair.of("player", player.getName()));
+                    Pair.of("%player%", player.getName()));
         }
         if (args.length > 1 && "sudo".equalsIgnoreCase(args[0]) && sender.hasPermission("sweet.chat.sudo")) {
             Player player = Util.getOnlinePlayer(args[1]).orElse(null);
