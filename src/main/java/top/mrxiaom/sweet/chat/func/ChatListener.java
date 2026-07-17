@@ -39,7 +39,6 @@ import top.mrxiaom.sweet.chat.utils.ComponentUtils;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
@@ -56,6 +55,7 @@ public class ChatListener extends AbstractModule implements Listener {
     private final Map<String, List<IChatMode>> chatModeSwitchPrefix = new HashMap<>();
     private boolean cancelEventWhenNoFormat;
     private List<IAction> noFormatActions;
+    private boolean shouldCheckMuteInChat;
     public ChatListener(SweetChat plugin) {
         super(plugin);
         registerPart("plain", PartPlain::new);
@@ -64,38 +64,79 @@ public class ChatListener extends AbstractModule implements Listener {
         registerChatMode("local", new LocalMode(this));
     }
 
+    private interface IChatEventImpl {
+        void registerChat(ChatListener parent, EventPriority priority);
+        void registerMute(ChatListener parent, EventPriority priority);
+    }
     private enum ChatEventImpl {
         @SuppressWarnings("deprecation")
-        BUKKIT((listener, priority) -> {
-            Bukkit.getPluginManager().registerEvent(AsyncPlayerChatEvent.class, listener, priority, (l, event) -> {
-                if (!(event instanceof AsyncPlayerChatEvent)) return;
-                AsyncPlayerChatEvent e = (AsyncPlayerChatEvent) event;
-                if (e.isCancelled()) return;
-                listener.processChatEvent(e.getPlayer(), e.getMessage(), e);
-                if (e.isCancelled()) {
-                    e.setFormat("");
-                }
-            }, listener.plugin, true);
+        BUKKIT(1, new IChatEventImpl() {
+            @Override
+            public void registerChat(ChatListener parent, EventPriority priority) {
+                Bukkit.getPluginManager().registerEvent(AsyncPlayerChatEvent.class, parent, priority, (l, event) -> {
+                    if (!(event instanceof AsyncPlayerChatEvent)) return;
+                    AsyncPlayerChatEvent e = (AsyncPlayerChatEvent) event;
+                    if (e.isCancelled()) return;
+                    parent.processChatEvent(e.getPlayer(), e.getMessage(), e);
+                    if (e.isCancelled()) {
+                        e.setFormat("");
+                    }
+                }, parent.plugin, true);
+            }
+
+            @Override
+            public void registerMute(ChatListener parent, EventPriority priority) {
+                Bukkit.getPluginManager().registerEvent(AsyncPlayerChatEvent.class, parent, priority, (l, event) -> {
+                    if (!(event instanceof AsyncPlayerChatEvent)) return;
+                    AsyncPlayerChatEvent e = (AsyncPlayerChatEvent) event;
+                    if (e.isCancelled()) return;
+                    if (parent.checkMute(e.getPlayer())) {
+                        e.setCancelled(true);
+                        e.setFormat("");
+                    }
+                }, parent.plugin, true);
+            }
         }),
-        PAPER((listener, priority) -> {
-            Bukkit.getPluginManager().registerEvent(AsyncChatEvent.class, listener, priority, (l, event) -> {
-                if (!(event instanceof AsyncChatEvent)) return;
-                AsyncChatEvent e = (AsyncChatEvent) event;
-                if (e.isCancelled()) return;
-                Player player = e.getPlayer();
-                String message = LegacyComponentSerializer.legacySection().serialize(e.message());
-                listener.processChatEvent(player, message, e);
-            }, listener.plugin, true);
+        PAPER(0, new IChatEventImpl() {
+            @Override
+            public void registerChat(ChatListener parent, EventPriority priority) {
+                Bukkit.getPluginManager().registerEvent(AsyncChatEvent.class, parent, priority, (l, event) -> {
+                    if (!(event instanceof AsyncChatEvent)) return;
+                    AsyncChatEvent e = (AsyncChatEvent) event;
+                    if (e.isCancelled()) return;
+                    Player player = e.getPlayer();
+                    String message = LegacyComponentSerializer.legacySection().serialize(e.message());
+                    parent.processChatEvent(player, message, e);
+                }, parent.plugin, true);
+            }
+
+            @Override
+            public void registerMute(ChatListener parent, EventPriority priority) {
+                Bukkit.getPluginManager().registerEvent(AsyncChatEvent.class, parent, priority, (l, event) -> {
+                    if (!(event instanceof AsyncChatEvent)) return;
+                    AsyncChatEvent e = (AsyncChatEvent) event;
+                    if (e.isCancelled()) return;
+                    if (parent.checkMute(e.getPlayer())) {
+                        e.setCancelled(true);
+                    }
+                }, parent.plugin, true);
+            }
         })
 
         ;
-        private final BiConsumer<ChatListener, EventPriority> impl;
-        ChatEventImpl(BiConsumer<ChatListener, EventPriority> impl) {
+        private final int priority;
+        private final IChatEventImpl impl;
+        ChatEventImpl(int priority, IChatEventImpl impl) {
+            this.priority = priority;
             this.impl = impl;
         }
 
-        public void register(ChatListener listener, EventPriority priority) {
-            impl.accept(listener, priority);
+        public void registerChat(ChatListener parent, EventPriority priority) {
+            impl.registerChat(parent, priority);
+        }
+
+        public void registerMute(ChatListener parent, EventPriority priority) {
+            impl.registerMute(parent, priority);
         }
     }
 
@@ -113,10 +154,21 @@ public class ChatListener extends AbstractModule implements Listener {
 
         if (config.getBoolean("listener.enable", true)) {
             ChatEventImpl chatEvent = getChatEvent(config, "listener.event", ChatEventImpl.PAPER);
-            EventPriority priority = getPriority(config, "listener.priority", EventPriority.HIGHEST);
+            EventPriority priorityChat = getPriority(config, "listener.priority", EventPriority.HIGHEST);
 
-            info("使用聊天事件类型 " + chatEvent.name());
-            chatEvent.register(this, priority);
+            ChatEventImpl muteEvent = getChatEvent(config, "mute.event", ChatEventImpl.BUKKIT);
+            EventPriority priorityMute = getPriority(config, "mute.priority", EventPriority.HIGH);
+
+            info("使用聊天事件类型 " + chatEvent.name() + "，使用禁言事件类型 " + muteEvent.name());
+            chatEvent.registerChat(this, priorityChat);
+            if (muteEvent.priority > chatEvent.priority
+            || (muteEvent.priority == chatEvent.priority && priorityMute.getSlot() < priorityChat.getSlot())) {
+                shouldCheckMuteInChat = false;
+                chatEvent.registerMute(this, priorityMute);
+            } else {
+                shouldCheckMuteInChat = true;
+                warn("聊天格式处理的事件优先级配置比禁言的事件高，将不会注册禁言事件监听器，将禁言内联到聊天格式处理中");
+            }
         }
     }
 
@@ -221,7 +273,7 @@ public class ChatListener extends AbstractModule implements Listener {
         }
     }
 
-    public boolean onChat(Player player, String text) {
+    public boolean checkMute(Player player) {
         MuteDatabase database = plugin.getMuteDatabase();
         Mute mute = database.getMute(player.getUniqueId());
         LocalDateTime endTime = mute.endTime();
@@ -245,6 +297,15 @@ public class ChatListener extends AbstractModule implements Listener {
             }
             default:
                 break;
+        }
+        return false;
+    }
+
+    public boolean onChat(Player player, String text) {
+        if (shouldCheckMuteInChat) {
+            if (checkMute(player)) {
+                return true;
+            }
         }
         ChatContext ctx = new ChatContext(plugin, player, text);
         boolean success = getChatMode(ctx).chat(ctx);

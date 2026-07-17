@@ -73,6 +73,9 @@ chat-mode:
       - 'local/*'
 
 mute:
+  # 使用什么事件来处理禁言
+  event: BUKKIT
+  priority: HIGH
   time-format:
     duration:
       delimiter: ''
