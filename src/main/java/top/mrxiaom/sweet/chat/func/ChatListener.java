@@ -164,7 +164,7 @@ public class ChatListener extends AbstractModule implements Listener {
             if (muteEvent.priority > chatEvent.priority
             || (muteEvent.priority == chatEvent.priority && priorityMute.getSlot() < priorityChat.getSlot())) {
                 shouldCheckMuteInChat = false;
-                chatEvent.registerMute(this, priorityMute);
+                muteEvent.registerMute(this, priorityMute);
             } else {
                 shouldCheckMuteInChat = true;
                 warn("聊天格式处理的事件优先级配置比禁言的事件高，将不会注册禁言事件监听器，将禁言内联到聊天格式处理中");
