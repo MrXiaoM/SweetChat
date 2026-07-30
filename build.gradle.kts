@@ -15,7 +15,7 @@ buildscript {
 val base = LibraryHelper(project)
 
 group = "top.mrxiaom.sweet.chat"
-version = "1.0.6"
+version = "1.0.7"
 val targetJavaVersion = 8
 val pluginBaseModules = base.modules.run { listOf(library, paper, actions, l10n, misc) }
 val shadowGroup = "top.mrxiaom.sweet.chat.libs"
@@ -49,7 +49,7 @@ dependencies {
     base.collectPluginHolders()
 
     implementation(base.depend.EvalEx)
-    implementation(base.depend.nbtapi)
+    implementation("de.tr7zw:item-nbt-api:2.16.0")
     implementation("com.github.technicallycoded:FoliaLib:0.4.4") { isTransitive = false }
     for (artifact in pluginBaseModules) {
         implementation("$artifact")
