@@ -12,7 +12,6 @@ import top.mrxiaom.pluginbase.utils.ConfigUtils;
 import top.mrxiaom.pluginbase.utils.depend.PAPI;
 import top.mrxiaom.pluginbase.utils.inventory.InventoryFactory;
 import top.mrxiaom.pluginbase.utils.item.ItemEditor;
-import top.mrxiaom.pluginbase.utils.scheduler.FoliaLibScheduler;
 import top.mrxiaom.sweet.chat.actions.ActionLog;
 import top.mrxiaom.sweet.chat.actions.ActionMessageOp;
 import top.mrxiaom.sweet.chat.api.*;
@@ -48,7 +47,6 @@ public class SweetChat extends BukkitPlugin {
                 .reconnectDatabaseWhenReloadConfig(false)
                 .scanIgnore("top.mrxiaom.sweet.chat.libs")
         );
-        this.scheduler = new FoliaLibScheduler(this);
 
         try {
             //noinspection ResultOfMethodCallIgnored, deprecation
