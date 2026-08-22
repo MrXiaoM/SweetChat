@@ -12,8 +12,6 @@ import net.kyori.adventure.nbt.api.BinaryTagHolder;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.event.HoverEventSource;
-import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.text.minimessage.tag.Tag;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -27,6 +25,7 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import top.mrxiaom.pluginbase.api.IRunTask;
+import top.mrxiaom.pluginbase.api.message.ITagSerializer;
 import top.mrxiaom.pluginbase.func.AutoRegister;
 import top.mrxiaom.pluginbase.utils.*;
 import top.mrxiaom.pluginbase.utils.depend.PAPI;
@@ -226,7 +225,7 @@ public class MessageReplacementManager extends AbstractModule implements PluginM
     }
 
     @NotNull
-    public String handle(@NotNull String inputText, @NotNull ChatContext ctx, @NotNull MiniMessage.Builder builder) {
+    public String handle(@NotNull String inputText, @NotNull ChatContext ctx, @NotNull ITagSerializer.Builder builder) {
         if (!enable) return inputText;
         String text = inputText;
         Player player = ctx.player();
@@ -242,8 +241,8 @@ public class MessageReplacementManager extends AbstractModule implements PluginM
     }
 
     @NotNull
-    @SuppressWarnings("PatternValidation")
-    public String handleItemDisplay(@NotNull Player player, @NotNull String inputText, @NotNull MiniMessage.Builder builder) {
+    @SuppressWarnings({"PatternValidation", "UnstableApiUsage"})
+    public String handleItemDisplay(@NotNull Player player, @NotNull String inputText, @NotNull ITagSerializer.Builder builder) {
         PlayerInventory inv = player.getInventory();
         Set<EnumItemSource> addedItems = new HashSet<>();
         String text = inputText;
@@ -274,15 +273,15 @@ public class MessageReplacementManager extends AbstractModule implements PluginM
                 addedItems.add(value);
                 // 添加标签
                 Component item = toComponent(value.get(inv), player);
-                builder.editTags(tags -> tags.tag(tagName, Tag.selfClosingInserting(item)));
+                builder.editTags(tags -> tags.addSelfClosingInserting(tagName, item));
             }
         }
         return text;
     }
 
     @NotNull
-    @SuppressWarnings("PatternValidation")
-    public String handlePlaceholders(@NotNull Player player, @NotNull String inputText, @NotNull MiniMessage.Builder builder) {
+    @SuppressWarnings({"PatternValidation", "UnstableApiUsage"})
+    public String handlePlaceholders(@NotNull Player player, @NotNull String inputText, @NotNull ITagSerializer.Builder builder) {
         // 以防玩家类似输入 <sweet-chat-placeholders-0/> 绕过限制
         String text = inputText.replaceAll("<sweet-chat-placeholders-\\d+/?>", "");
         int i = 0;
@@ -301,7 +300,7 @@ public class MessageReplacementManager extends AbstractModule implements PluginM
                     text = matcher.replaceAll("<" + tagName + "/>");
                 }
                 Component component = entry.getValue().build(str -> PAPI.setPlaceholders(player, Pair.replace(str, r)));
-                builder.editTags(tags -> tags.tag(tagName, Tag.selfClosingInserting(component)));
+                builder.editTags(tags -> tags.addSelfClosingInserting(tagName, component));
             }
         }
         for (Map.Entry<String, ComponentBuilder> entry : placeholdersInput.entrySet()) {
@@ -314,7 +313,7 @@ public class MessageReplacementManager extends AbstractModule implements PluginM
                     text = text.replace(key, "<" + tagName + "/>");
                 }
                 Component component = entry.getValue().build(str -> PAPI.setPlaceholders(player, str));
-                builder.editTags(tags -> tags.tag(tagName, Tag.selfClosingInserting(component)));
+                builder.editTags(tags -> tags.addSelfClosingInserting(tagName, component));
             }
         }
         if (atConfig.isEnable()) {
@@ -327,13 +326,14 @@ public class MessageReplacementManager extends AbstractModule implements PluginM
         return toComponent(item, null);
     }
 
+    @SuppressWarnings("UnstableApiUsage")
     public Component toComponent(@NotNull ItemStack item, @Nullable Player player) {
         Component component;
         if (item.getAmount() > 0 && !item.getType().equals(Material.AIR)) {
             Component displayName = AdventureItemStack.getItemDisplayName(item);
             if (displayName != null) {
-                MiniMessage mm = AdventureUtil.builder()
-                        .editTags(tags -> tags.tag("item", Tag.selfClosingInserting(displayName)))
+                ITagSerializer mm = AdventureUtil.builder()
+                        .editTags(tags -> tags.addSelfClosingInserting("item", displayName))
                         .build();
                 component = AdventureUtil.miniMessage(mm, itemDisplayFormat);
             } else {
@@ -381,7 +381,7 @@ public class MessageReplacementManager extends AbstractModule implements PluginM
      * 来自 {@link AdventureItemStack#toHoverEvent(ItemStack)}
      * @param item 物品
      */
-    @SuppressWarnings({"deprecation"})
+    @SuppressWarnings({"deprecation", "DataFlowIssue", "RedundantCast"})
     private static HoverEventSource<?> toHoverEvent(ItemStack item) {
         // Paper 方案 - 直接转换
         if (item instanceof HoverEventSource) {

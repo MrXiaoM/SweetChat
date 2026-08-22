@@ -1,13 +1,12 @@
 package top.mrxiaom.sweet.chat.config.replacements;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.text.minimessage.tag.Tag;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.ApiStatus;
 import top.mrxiaom.pluginbase.actions.ActionProviders;
 import top.mrxiaom.pluginbase.api.IAction;
+import top.mrxiaom.pluginbase.api.message.ITagSerializer;
 import top.mrxiaom.pluginbase.utils.ListPair;
 import top.mrxiaom.pluginbase.utils.Pair;
 import top.mrxiaom.pluginbase.utils.Util;
@@ -67,8 +66,8 @@ public class AtConfig {
         return playerSource;
     }
 
-    @SuppressWarnings("PatternValidation")
-    public String handle(Player player, String inputText, MiniMessage.Builder builder) {
+    @SuppressWarnings({"PatternValidation", "UnstableApiUsage"})
+    public String handle(Player player, String inputText, ITagSerializer.Builder builder) {
         Matcher matcher = regex.matcher(inputText);
         StringBuilder sb = new StringBuilder();
         int lastEnd = 0, atIndex = 0;
@@ -95,7 +94,7 @@ public class AtConfig {
                     replacement = "<" + tagName + "/>";
                     String insertion = "SweetChat:" + player.getName() + "@" + name;
                     Component component = format.build(str -> str.replace("%at_target%", name)).insertion(insertion);
-                    builder.editTags(tags -> tags.tag(tagName, Tag.selfClosingInserting(component)));
+                    builder.editTags(tags -> tags.addSelfClosingInserting(tagName, component));
                 } else {
                     // 目标玩家不在线，不进行替换
                     replacement = match.group();

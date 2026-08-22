@@ -2,11 +2,13 @@ package top.mrxiaom.sweet.chat.func;
 
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.bukkit.permissions.Permissible;
+import top.mrxiaom.pluginbase.api.message.ITagSerializer;
 import top.mrxiaom.pluginbase.func.AutoRegister;
 import top.mrxiaom.pluginbase.utils.AdventureUtil;
+import top.mrxiaom.pluginbase.utils.adventure.SparrowMiniMessage;
+import top.mrxiaom.pluginbase.utils.adventure.sparrow.message.MiniMessage;
+import top.mrxiaom.pluginbase.utils.adventure.sparrow.message.tag.resolver.TagResolver;
 import top.mrxiaom.sweet.chat.SweetChat;
 import top.mrxiaom.sweet.chat.impl.tags.CustomColorTagResolver;
 import top.mrxiaom.sweet.chat.impl.tags.HexColorTagResolver;
@@ -14,7 +16,7 @@ import top.mrxiaom.sweet.chat.impl.tags.HexColorTagResolver;
 import java.util.ArrayList;
 import java.util.List;
 
-import static net.kyori.adventure.text.minimessage.tag.standard.StandardTags.*;
+import static top.mrxiaom.pluginbase.utils.adventure.sparrow.message.tag.standard.StandardTags.*;
 
 /**
  * 管理消息中 MiniMessage 标签解析的模块
@@ -25,7 +27,7 @@ public class MiniMessageTagsManager extends AbstractModule {
         super(plugin);
     }
 
-    public MiniMessage.Builder builder(Permissible p) {
+    public ITagSerializer.Builder builder(Permissible p) {
         TagResolver.Builder builder = TagResolver.builder();
         builder.resolver(reset());
         if (has(p, "color.all")) {
@@ -80,12 +82,11 @@ public class MiniMessageTagsManager extends AbstractModule {
         if (has(p, "font")) builder.resolver(font());
 
         MiniMessage.Builder miniMessage = MiniMessage.builder();
-
         miniMessage.tags(builder.build());
         if (has(p, "legacy")) miniMessage.preProcessor(AdventureUtil::legacyToMiniMessage);
         miniMessage.postProcessor(it -> it.decoration(TextDecoration.ITALIC, false));
 
-        return miniMessage;
+        return SparrowMiniMessage.builder(miniMessage);
     }
 
     private static boolean has(Permissible p, String... anyPerms) {

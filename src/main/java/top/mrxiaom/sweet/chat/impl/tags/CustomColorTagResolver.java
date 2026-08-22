@@ -3,22 +3,21 @@ package top.mrxiaom.sweet.chat.impl.tags;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.minimessage.Context;
-import net.kyori.adventure.text.minimessage.ParsingException;
-import net.kyori.adventure.text.minimessage.internal.serializer.SerializableResolver;
-import net.kyori.adventure.text.minimessage.internal.serializer.StyleClaim;
-import net.kyori.adventure.text.minimessage.tag.Tag;
-import net.kyori.adventure.text.minimessage.tag.resolver.ArgumentQueue;
-import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.util.Index;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import top.mrxiaom.pluginbase.utils.adventure.sparrow.message.Context;
+import top.mrxiaom.pluginbase.utils.adventure.sparrow.message.ParsingException;
+import top.mrxiaom.pluginbase.utils.adventure.sparrow.message.internal.serializer.SerializableResolver;
+import top.mrxiaom.pluginbase.utils.adventure.sparrow.message.internal.serializer.StyleClaim;
+import top.mrxiaom.pluginbase.utils.adventure.sparrow.message.tag.Tag;
+import top.mrxiaom.pluginbase.utils.adventure.sparrow.message.tag.resolver.ArgumentQueue;
+import top.mrxiaom.pluginbase.utils.adventure.sparrow.message.tag.resolver.TagResolver;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@SuppressWarnings({"UnstableApiUsage"})
 public class CustomColorTagResolver implements TagResolver, SerializableResolver.Single {
     private static final String COLOR_3 = "c";
     private static final String COLOR_2 = "colour";

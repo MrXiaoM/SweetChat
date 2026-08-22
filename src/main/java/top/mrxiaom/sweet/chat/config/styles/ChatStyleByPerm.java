@@ -4,13 +4,12 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.text.minimessage.tag.Tag;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permissible;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
+import top.mrxiaom.pluginbase.api.message.ITagSerializer;
 import top.mrxiaom.pluginbase.utils.AdventureUtil;
 import top.mrxiaom.pluginbase.utils.Util;
 import top.mrxiaom.pluginbase.utils.depend.PAPI;
@@ -69,6 +68,7 @@ public class ChatStyleByPerm {
         return apply(input, null);
     }
 
+    @SuppressWarnings("UnstableApiUsage")
     public Component apply(Component input, Player player) {
         if (this.custom.isEmpty()) {
             Component component = input.asComponent();
@@ -80,8 +80,8 @@ public class ChatStyleByPerm {
             }
             return component;
         } else {
-            MiniMessage mm = AdventureUtil.builder()
-                    .editTags(tags -> tags.tag("message-content", Tag.selfClosingInserting(input)))
+            ITagSerializer mm = AdventureUtil.builder()
+                    .editTags(tags -> tags.addSelfClosingInserting("message-content", input))
                     .build();
             String custom = player == null ? this.custom : PAPI.setPlaceholders(player, this.custom);
             return AdventureUtil.miniMessage(mm, custom + "<message-content/>");
