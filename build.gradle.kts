@@ -49,7 +49,7 @@ dependencies {
     base.collectPluginHolders()
 
     implementation(base.depend.EvalEx)
-    implementation("de.tr7zw:item-nbt-api:2.16.0")
+    implementation("de.tr7zw:item-nbt-api:2.16.1")
     for (artifact in pluginBaseModules) {
         implementation("$artifact")
     }
